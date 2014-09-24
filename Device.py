@@ -1,7 +1,7 @@
 __author__ = 'Alimohammad'
 import smbus
 import time
-import thread
+import threading
 import math
 import logging
 
@@ -18,8 +18,14 @@ class RPi:
         self.motion = 0
         self.bus = smbus.SMBus(1)
         self.occupancy_callback = occupancy_callback
-        thread.start_new_thread(self.read_temperature)
-        thread.start_new_thread(self.read_motion)
+
+        temperature_thread = threading.Thread(target=self.read_temperature)
+        temperature_thread.daemon = True
+        temperature_thread.start()
+
+        motion_thread = threading.Thread(target=self.read_motion)
+        motion_thread.daemon = True
+        motion_thread.start()
 
     def read_temperature(self):
         while True:
