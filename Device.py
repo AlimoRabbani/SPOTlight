@@ -1,33 +1,52 @@
 __author__ = 'Alimohammad'
 import smbus
 import time
+import thread
+import math
+import logging
+
 
 class RPi:
+    logger = logging.getLogger("RPi Logger")
+
     ADC_ADDRESS = 0x34
     TMP_CMD = 0x61
     MOTION_CMD = 0x63
 
-    def __init__(self, temperature_callback, motion_callback):
+    def __init__(self, occupancy_callback):
         self.temperature = 24
         self.motion = 0
-        self.temperature_callback = temperature_callback
-        self.motion_callback = motion_callback
-        self.read_temperature()
-        self.read_motion()
-        
+        self.bus = smbus.SMBus(1)
+        self.occupancy_callback = occupancy_callback
+        thread.start_new_thread(self.read_temperature)
+        thread.start_new_thread(self.read_motion)
+
     def read_temperature(self):
-        bus = smbus.SMBus(1)
-        data = bus.read_word_data(RPi.ADC_ADDRESS, RPi.TMP_CMD)
-        data = RPi.reverse_byte_order(data) & 0x0fff
-        print (((data/4096.00)*5)-1.375)*1000/22.5
-        self.temperature_callback(1)
+        while True:
+            data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.TMP_CMD)
+            data = RPi.reverse_byte_order(data) & 0x0fff
+            temperature = (((data/4096.00)*5)-1.375)*1000/22.5
+            RPi.logger.info("[Occupancy]" + str(temperature))
+            time.sleep(10)
 
     def read_motion(self):
-        bus = smbus.SMBus(1)
-        data = bus.read_word_data(RPi.ADC_ADDRESS, RPi.MOTION_CMD)
-        data = RPi.reverse_byte_order(data) & 0x0fff
-        print data/4.096
-        self.motion_callback(2)
+        counter = 0
+        sum_of_squares = 0
+        sum_of_motion = 0
+        while True:
+            data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.MOTION_CMD)
+            raw_motion = (RPi.reverse_byte_order(data) & 0x0fff) / 4.096
+            RPi.logger.info("[Motion]" + raw_motion)
+            sum_of_motion += raw_motion
+            sum_of_squares += pow(raw_motion, 2)
+            counter += 1
+            if counter == 240:
+                standard_deviation = math.sqrt((sum_of_squares / counter) - pow(sum_of_motion/counter, 2))
+                RPi.logger.info("[Occupancy]" + str(standard_deviation))
+                counter = sum_of_squares = sum_of_motion = 0
+                self.occupancy_callback(2)
+            time.sleep(0.5)
+
 
     @staticmethod
     def reverse_byte_order(data):
