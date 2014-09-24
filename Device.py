@@ -4,7 +4,7 @@ import time
 import threading
 import math
 import logging
-import sys
+import os
 
 
 class RPi:
@@ -34,10 +34,10 @@ class RPi:
                 data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.TMP_CMD)
                 data = RPi.reverse_byte_order(data) & 0x0fff
                 temperature = (((data/4096.00)*5)-1.375)*1000/22.5
-                RPi.logger.info("[Occupancy]" + str(temperature))
+                RPi.logger.info("[Temperature]" + str(temperature))
                 time.sleep(10)
         except KeyboardInterrupt:
-            sys.exit()
+            os._exit(1)
 
     def read_motion(self):
         try:
@@ -55,10 +55,10 @@ class RPi:
                     standard_deviation = math.sqrt((sum_of_squares / counter) - pow(sum_of_motion/counter, 2))
                     RPi.logger.info("[Occupancy]" + str(standard_deviation))
                     counter = sum_of_squares = sum_of_motion = 0
-                    self.occupancy_callback(2)
+                    self.occupancy_callback(standard_deviation)
                 time.sleep(0.5)
         except KeyboardInterrupt:
-            sys.exit()
+            os._exit(1)
 
     @staticmethod
     def reverse_byte_order(data):
