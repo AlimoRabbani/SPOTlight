@@ -4,7 +4,7 @@ import logging
 
 
 logger = logging.getLogger("RPi Logger")
-# logger.setLevel(logging.NOTSET)
+logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 file_handler = logging.FileHandler('rpi.log')
