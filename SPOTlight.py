@@ -1,6 +1,7 @@
 __author__ = 'Alimohammad'
 from Device import RPi
 import logging
+import time
 
 
 logger = logging.getLogger("RPi Logger")
@@ -23,6 +24,9 @@ logger.addHandler(console_handler)
 
 def main():
     rpi_instance = RPi(callback)
+    while True:
+        time.sleep(10)
+
 
 
 def callback(input_occupancy):
