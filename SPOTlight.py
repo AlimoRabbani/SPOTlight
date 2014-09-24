@@ -11,11 +11,13 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-def main():
-    rpi_instance = RPi(callback, callback)
 
-def callback(input):
-    print "Called: " + str(input)
+def main():
+    rpi_instance = RPi(callback)
+
+
+def callback(input_id):
+    print "Called: " + str(input_id)
 
 if __name__ == "__main__":
     main()
