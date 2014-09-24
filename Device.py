@@ -20,11 +20,11 @@ class RPi:
         self.occupancy_callback = occupancy_callback
 
         temperature_thread = threading.Thread(target=self.read_temperature)
-        temperature_thread.daemon = True
+        temperature_thread.daemon = False
         temperature_thread.start()
 
         motion_thread = threading.Thread(target=self.read_motion)
-        motion_thread.daemon = True
+        motion_thread.daemon = False
         motion_thread.start()
 
     def read_temperature(self):
@@ -42,7 +42,7 @@ class RPi:
         while True:
             data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.MOTION_CMD)
             raw_motion = (RPi.reverse_byte_order(data) & 0x0fff) / 4.096
-            RPi.logger.info("[Motion]" + raw_motion)
+            RPi.logger.info("[Motion]" + str(raw_motion))
             sum_of_motion += raw_motion
             sum_of_squares += pow(raw_motion, 2)
             counter += 1
