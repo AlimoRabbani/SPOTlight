@@ -28,7 +28,7 @@ class RPi:
         self.motion_callback(2)
 
     @staticmethod
-    def reverse_byte_order(self, data):
+    def reverse_byte_order(data):
         dst = hex(data)[2:].replace('L', '')
         byte_count = len(dst[::2])
         val = 0
