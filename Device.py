@@ -28,13 +28,11 @@ class RPi:
 
     def read_temperature(self):
         while True:
-            start_time = time.time()
             data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.TMP_CMD)
             data = RPi.reverse_byte_order(data) & 0x0fff
             temperature = (((data/4096.00)*5)-1.375)*1000/22.5
             RPi.logger.info("[Temperature]" + str(temperature))
-            end_time = time.time()
-            time.sleep(10 - (end_time - start_time + 0.001))
+            time.sleep(60)
 
 
     def read_motion(self):
@@ -53,7 +51,8 @@ class RPi:
                 self.occupancy_callback(standard_deviation)
                 sum_of_squares = sum_of_motion = counter = 0
             end_time = time.time()
-            time.sleep(0.5 - (end_time - start_time + 0.001))
+            time_difference = (end_time - start_time + 0.0008) if (end_time - start_time + 0.0008) < 0.5 else 0.5
+            time.sleep(0.5 - time_difference)
 
     @staticmethod
     def reverse_byte_order(data):
