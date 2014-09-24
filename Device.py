@@ -37,6 +37,7 @@ class RPi:
                 RPi.logger.info("[Temperature]" + str(temperature))
                 time.sleep(10)
         except KeyboardInterrupt:
+            RPi.logger.warning("Keyboard Interrupt")
             os._exit(1)
 
     def read_motion(self):
@@ -58,6 +59,7 @@ class RPi:
                     self.occupancy_callback(standard_deviation)
                 time.sleep(0.5)
         except KeyboardInterrupt:
+            RPi.logger.warning("Keyboard Interrupt")
             os._exit(1)
 
     @staticmethod
