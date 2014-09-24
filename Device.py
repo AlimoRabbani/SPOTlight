@@ -28,29 +28,33 @@ class RPi:
 
     def read_temperature_scheduler(self):
         tmp_scheduler = sched.scheduler(time.time, time.sleep)
-        tmp_scheduler.enter(10, 1, self.read_temperature, (tmp_scheduler,))
+        tmp_scheduler.enter(0, 1, self.read_temperature, (tmp_scheduler,))
         tmp_scheduler.run()
 
     def read_temperature(self, scheduler):
+        start_time = time.time()
         data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.TMP_CMD)
         data = RPi.reverse_byte_order(data) & 0x0fff
         temperature = (((data/4096.00)*5)-1.375)*1000/22.5
         RPi.logger.info("[Temperature]" + str(temperature))
-        scheduler.enter(10, 1, self.read_temperature, (scheduler,))
+        end_time = time.time()
+        scheduler.enter(end_time - start_time, 1, self.read_temperature, (scheduler,))
 
     def read_motion_scheduler(self):
         motion_scheduler = sched.scheduler(time.time, time.sleep)
-        motion_scheduler.enter(0.5, 1, self.read_motion, (motion_scheduler,))
+        motion_scheduler.enter(0, 1, self.read_motion, (motion_scheduler,))
         motion_scheduler.run()
 
     def read_motion(self, scheduler):
+        start_time = time.time()
         data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.MOTION_CMD)
         raw_motion = (RPi.reverse_byte_order(data) & 0x0fff) / 4.096
         RPi.logger.info("[Motion]" + str(raw_motion))
         # standard_deviation = math.sqrt((sum_of_squares / counter) - pow(sum_of_motion/counter, 2))
         # RPi.logger.info("[Occupancy]" + str(standard_deviation))
         # self.occupancy_callback(standard_deviation)
-        scheduler.enter(0.5, 1, self.read_motion, (scheduler,))
+        end_time = time.time()
+        scheduler.enter(end_time - start_time, 1, self.read_motion, (scheduler,))
 
     @staticmethod
     def reverse_byte_order(data):
