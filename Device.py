@@ -38,7 +38,7 @@ class RPi:
         temperature = (((data/4096.00)*5)-1.375)*1000/22.5
         RPi.logger.info("[Temperature]" + str(temperature))
         end_time = time.time()
-        scheduler.enter(end_time - start_time, 1, self.read_temperature, (scheduler,))
+        scheduler.enter(10 - (end_time - start_time), 1, self.read_temperature, (scheduler,))
 
     def read_motion_scheduler(self):
         motion_scheduler = sched.scheduler(time.time, time.sleep)
@@ -54,7 +54,7 @@ class RPi:
         # RPi.logger.info("[Occupancy]" + str(standard_deviation))
         # self.occupancy_callback(standard_deviation)
         end_time = time.time()
-        scheduler.enter(end_time - start_time, 1, self.read_motion, (scheduler,))
+        scheduler.enter(0.5 - (end_time - start_time), 1, self.read_motion, (scheduler,))
 
     @staticmethod
     def reverse_byte_order(data):
