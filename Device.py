@@ -29,44 +29,38 @@ class RPi:
         motion_thread.start()
 
     def read_temperature(self):
-        try:
-            while True:
-                try:
-                    data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.TMP_CMD)
-                    data = RPi.reverse_byte_order(data) & 0x0fff
-                    temperature = (((data/4096.00)*5)-1.375)*1000/22.5
-                    RPi.logger.info("[Temperature]" + str(temperature))
-                    time.sleep(10)
-                except KeyboardInterrupt:
-                    raise
-        except KeyboardInterrupt:
-            RPi.logger.warning("Keyboard Interrupt")
-            os._exit(1)
+        while True:
+            try:
+                data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.TMP_CMD)
+                data = RPi.reverse_byte_order(data) & 0x0fff
+                temperature = (((data/4096.00)*5)-1.375)*1000/22.5
+                RPi.logger.info("[Temperature]" + str(temperature))
+                time.sleep(10)
+            except KeyboardInterrupt:
+                RPi.logger.warning("Keyboard Interrupt")
+                os._exit(1)
 
     def read_motion(self):
-        try:
-            counter = 0
-            sum_of_squares = 0
-            sum_of_motion = 0
-            while True:
-                try:
-                    data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.MOTION_CMD)
-                    raw_motion = (RPi.reverse_byte_order(data) & 0x0fff) / 4.096
-                    RPi.logger.info("[Motion]" + str(raw_motion))
-                    sum_of_motion += raw_motion
-                    sum_of_squares += pow(raw_motion, 2)
-                    counter += 1
-                    if counter == 240:
-                        standard_deviation = math.sqrt((sum_of_squares / counter) - pow(sum_of_motion/counter, 2))
-                        RPi.logger.info("[Occupancy]" + str(standard_deviation))
-                        counter = sum_of_squares = sum_of_motion = 0
-                        self.occupancy_callback(standard_deviation)
-                    time.sleep(0.5)
-                except KeyboardInterrupt:
-                    raise
-        except KeyboardInterrupt:
-            RPi.logger.warning("Keyboard Interrupt")
-            os._exit(1)
+        counter = 0
+        sum_of_squares = 0
+        sum_of_motion = 0
+        while True:
+            try:
+                data = self.bus.read_word_data(RPi.ADC_ADDRESS, RPi.MOTION_CMD)
+                raw_motion = (RPi.reverse_byte_order(data) & 0x0fff) / 4.096
+                RPi.logger.info("[Motion]" + str(raw_motion))
+                sum_of_motion += raw_motion
+                sum_of_squares += pow(raw_motion, 2)
+                counter += 1
+                if counter == 240:
+                    standard_deviation = math.sqrt((sum_of_squares / counter) - pow(sum_of_motion/counter, 2))
+                    RPi.logger.info("[Occupancy]" + str(standard_deviation))
+                    counter = sum_of_squares = sum_of_motion = 0
+                    self.occupancy_callback(standard_deviation)
+                time.sleep(0.5)
+            except KeyboardInterrupt:
+                RPi.logger.warning("Keyboard Interrupt")
+                os._exit(1)
 
     @staticmethod
     def reverse_byte_order(data):
