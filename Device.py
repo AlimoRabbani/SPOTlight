@@ -7,12 +7,14 @@ class RPi:
     TMP_CMD = 0x61
     MOTION_CMD = 0x63
 
-    def __init__(self):
+    def __init__(self, temperature_callback, motion_callback):
         self.temperature = 24
         self.motion = 0
+        self.temperature_callback = temperature_callback
+        self.motion_callback = motion_callback
         self.read_temperature()
         self.read_motion()
-
+        
     def read_temperature(self):
         bus = smbus.SMBus(1)
         data = bus.read_word_data(RPi.ADC_ADDRESS, RPi.TMP_CMD)
