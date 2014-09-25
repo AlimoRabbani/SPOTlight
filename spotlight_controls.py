@@ -7,10 +7,8 @@ class Reactive:
     def __init__(self):
         pass
 
-    @classmethod
-    def motion_updated(standard_deviation):
+    def motion_updated(self, standard_deviation):
         Config.logger.info("[Motion_STD]" + str(standard_deviation))
 
-    @staticmethod
-    def temperature_updated(temperature):
+    def temperature_updated(self, temperature):
         Config.logger.info("[Temperature2]" + str(temperature))

@@ -14,7 +14,8 @@ Config.initialize()
 def main():
     Config.logger.info("SPOTlight v%s Started" % Config.config["version_id"])
     Updater.start()
-    RPi.start(Reactive.temperature_updated, Reactive.motion_updated)
+    controller = Reactive()
+    RPi.start(controller.temperature_updated, controller.motion_updated)
     # logger.debug(str(PMV.calculate_pmv(0.5, 25.0, 25.0, 1.2, 0.0, 100.0)))
 
     while True:
