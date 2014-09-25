@@ -1,3 +1,9 @@
 .idea/.name
 *.xml
 .idea/SPOTlight.iml
+
+*.pyc
+
+SPOTlight_key.private
+
+rpi.log

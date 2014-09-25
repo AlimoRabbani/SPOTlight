@@ -1,36 +1,29 @@
+#!/usr/bin/env python
+
 __author__ = 'Alimohammad'
-from Device import RPi
-import logging
+
+from spotlight_devices import RPi
 import time
+# from pmv import PMV
+from spotlight_update import Updater
+from spotlight_config import Config
+from spotlight_controls import Reactive
 
-
-logger = logging.getLogger("RPi Logger")
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-file_handler = logging.FileHandler('rpi.log')
-file_handler.setLevel(logging.INFO)
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-
-
-file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
+Config.initialize()
 
 def main():
-    rpi_instance = RPi(callback)
+    Config.logger.info("SPOTlight v%s Started" % Config.config["version_id"])
+    Updater.start()
+    RPi.start(Reactive.temperature_updated, Reactive.motion_updated)
+    # logger.debug(str(PMV.calculate_pmv(0.5, 25.0, 25.0, 1.2, 0.0, 100.0)))
+
     while True:
         time.sleep(10)
 
 
 
 def callback(input_occupancy):
-    logger.debug("Occupancy Update Called: " + str(input_occupancy))
+    Config.logger.debug("Occupancy Update Called: " + str(input_occupancy))
 
 if __name__ == "__main__":
     main()
