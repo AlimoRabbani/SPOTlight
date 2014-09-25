@@ -5,6 +5,7 @@ from spotlight_devices import RPi
 
 import time
 
+
 class Reactive:
     def __init__(self):
         speed = 0.05

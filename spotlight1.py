@@ -4,7 +4,7 @@ __author__ = 'Alimohammad'
 
 from spotlight_devices import RPi
 import time
-# from pmv import PMV
+# from pmv import PMVs
 from spotlight_update import Updater
 from spotlight_config import Config
 from spotlight_controls import Reactive
