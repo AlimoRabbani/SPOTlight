@@ -7,7 +7,7 @@ class Reactive:
     def __init__(self):
         pass
 
-    @staticmethod
+    @classmethod
     def motion_updated(standard_deviation):
         Config.logger.info("[Motion_STD]" + str(standard_deviation))
 
