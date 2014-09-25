@@ -7,6 +7,8 @@
 "temperature_reading_resolution":10,
 "motion_reading_resolution":0.5,
 "RPi_ADC_ADDRESS":"0x34",
+"RPi_DAC_ADDRESS":"0x1b",
 "RPi_TMP_CMD":"0x61",
-"RPi_MOTION_CMD":"0x63"
+"RPi_MOTION_CMD":"0x63",
+"RPi_DAC_CMD":"0x80"
 }

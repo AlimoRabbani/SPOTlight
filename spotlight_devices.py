@@ -60,6 +60,12 @@ class RPi:
             time.sleep(Config.config["motion_reading_resolution"] - time_difference)
 
     @staticmethod
+    def set_fan_speed(speed):
+        speed_12bit = int(speed * 4096)
+        RPi.bus.write_word_data(int(Config.config["RPi_DAC_ADDRESS"], 16),
+                                int(Config.config["RPi_DAC_CMD"], 16), speed_12bit)
+
+    @staticmethod
     def reverse_byte_order(data):
         dst = hex(data)[2:].replace('L', '')
         byte_count = len(dst[::2])
