@@ -63,7 +63,7 @@ class RPi:
     def set_fan_speed(speed):
         speed_12bit = int(speed * 4096)
         RPi.bus.write_word_data(int(Config.config["RPi_DAC_ADDRESS"], 16),
-                                int(Config.config["RPi_DAC_CMD"], 16), speed_12bit)
+                                int(Config.config["RPi_DAC_CMD"], 16), RPi.reverse_byte_order(speed_12bit))
 
     @staticmethod
     def reverse_byte_order(data):
