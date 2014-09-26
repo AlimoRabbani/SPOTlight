@@ -69,16 +69,19 @@ class RPi:
         speed_voltage = (Config.config["fan_max_speed_voltage"] - Config.config["fan_min_speed_voltage"])*speed\
                         + Config.config["fan_min_speed_voltage"]
         speed_12bit = int((speed_voltage/Config.config["RPi_MAX_VOLTAGE"]) * 4096)
+        Config.logger.info("[Fan_Speed][%s][Fan_Voltage][%s][Bit_Value][%s]"
+                           % (str(speed),str(speed_voltage), str(speed_12bit)))
         RPi.bus.write_word_data(int(Config.config["RPi_DAC_ADDRESS"], 16),
                                 int(Config.config["RPi_DAC_CMD"], 16), RPi.reverse_byte_order(speed_12bit))
 
     @staticmethod
     def set_fan_state(on):
         GPIO.output(Config.config["RPi_FAN_PIN"], on)
-
+        Config.logger.info("[Fan_State][%s]" % str(on))
     @staticmethod
     def set_heater_state(on):
         GPIO.output(Config.config["RPi_HEATER_PIN"], on)
+        Config.logger.info("[Heater_State][%s]" % str(on))
 
     @staticmethod
     def reverse_byte_order(data):

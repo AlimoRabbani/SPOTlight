@@ -25,6 +25,7 @@ def main():
         while True:
             time.sleep(10)
     except KeyboardInterrupt:
+        Config.logger.info("Keyboard interrupt received. Cleaning up...")
         GPIO.cleanup()
 
 
