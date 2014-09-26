@@ -3,7 +3,6 @@ __author__ = 'Alimohammad'
 import time
 import threading
 import db
-import datetime
 
 from spotlight_config import Config
 from spotlight_devices import RPi
@@ -28,9 +27,9 @@ class Reactive:
         RPi.set_fan_state(True)
 
     def motion_updated(self, standard_deviation):
-        db.insert({"timestamp": datetime.datetime.utcnow(), "Value": standard_deviation}, "Motions")
+        db.insert({"motion": standard_deviation}, "Measurements")
         Config.logger.info("[Motion_STD]" + str(standard_deviation))
 
     def temperature_updated(self, temperature):
-        db.insert({"timestamp": datetime.datetime.utcnow(), "Value": temperature}, "Temperatures")
+        db.insert({"temperature": temperature}, "Measurements")
         Config.logger.info("[Temperature]" + str(temperature))

@@ -16,6 +16,7 @@ class Config:
     def initialize():
         Config.config = json.loads(open("config.json").read())
         Config.db_config = json.loads(open("db.json").read())
+        Config.config["mac_address"] = Config.get_mac('wlan0')
 
         logger = logging.getLogger("SPOTlight")
         logger.setLevel(logging.DEBUG)
@@ -27,7 +28,6 @@ class Config:
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.DEBUG)
 
-
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
 
@@ -35,4 +35,11 @@ class Config:
         logger.addHandler(console_handler)
         Config.logger.info("Configurations loaded...")
 
-
+    @staticmethod
+    def get_mac(interface):
+        # Return the MAC address of interface
+        try:
+            mac_address = open("/sys/class/net/%s/address" % interface).readline()
+        except:
+            mac_address = "00:00:00:00:00:00"
+        return mac_address[0:17]

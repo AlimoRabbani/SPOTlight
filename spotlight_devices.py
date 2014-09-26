@@ -3,6 +3,8 @@ import smbus
 import RPi.GPIO as GPIO
 import time, math
 import threading
+import db
+
 from spotlight_config import Config
 
 
@@ -69,6 +71,7 @@ class RPi:
     @staticmethod
     def set_fan_speed(speed):
         # Converting 0.0-1.0 fan speed to a 12 bit voltage based number understandable by the ADC
+        db.insert({"fan_speed": speed}, "Events")
         speed_voltage = (Config.config["fan_max_speed_voltage"] - Config.config["fan_min_speed_voltage"])*speed\
                         + Config.config["fan_min_speed_voltage"]
         speed_12bit = int((speed_voltage/Config.config["RPi_MAX_VOLTAGE"]) * 4096 * 16)
@@ -79,10 +82,12 @@ class RPi:
 
     @staticmethod
     def set_fan_state(on):
+        db.insert({"fan_state": on}, "Events")
         GPIO.output(Config.config["RPi_FAN_PIN"], on)
         Config.logger.info("[Fan_State][%s]" % str(on))
     @staticmethod
     def set_heater_state(on):
+        db.insert({"heater_state": on}, "Events")
         GPIO.output(Config.config["RPi_HEATER_PIN"], on)
         Config.logger.info("[Heater_State][%s]" % str(on))
 
