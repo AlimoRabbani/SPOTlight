@@ -68,7 +68,7 @@ class RPi:
         # Converting 0.0-1.0 fan speed to a 12 bit voltage based number understandable by the ADC
         speed_voltage = (Config.config["fan_max_speed_voltage"] - Config.config["fan_min_speed_voltage"])*speed\
                         + Config.config["fan_min_speed_voltage"]
-        speed_12bit = int((speed_voltage/Config.config["RPi_MAX_VOLTAGE"]) * 4096)
+        speed_12bit = int((speed_voltage/Config.config["RPi_MAX_VOLTAGE"]) * 4096 * 16)
         Config.logger.info("[Fan_Speed][%s][Fan_Voltage][%s][Bit_Value][%s]"
                            % (str(speed),str(speed_voltage), str(speed_12bit)))
         RPi.bus.write_word_data(int(Config.config["RPi_DAC_ADDRESS"], 16),
