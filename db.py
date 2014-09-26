@@ -10,5 +10,5 @@ def insert(document, collection_name):
     client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
     spotlight_collection = collection.Collection(client.spotlight, collection_name)
     common_fields = {"timestamp": datetime.datetime.utcnow(), "mac_address": Config["mac_address"]}
-    spotlight_collection.insert(common_fields.items() + document.items())
+    spotlight_collection.insert(dict(common_fields.items() + document.items()))
     client.close()
