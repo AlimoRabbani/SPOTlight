@@ -16,11 +16,14 @@ class Reactive:
         control_thread.start()
 
     def control_worker(self):
-        speed = 0.05
-        while True:
-            RPi.set_fan_speed(speed)
-            speed += 0.05
-            time.sleep(10)
+        RPi.set_fan_speed(0.0)
+        time.sleep(10)
+        RPi.set_fan_speed(1.0)
+        time.sleep(10)
+        RPi.set_fan_speed(0.5)
+        time.sleep(10)
+        RPi.set_heater_state(True)
+        RPi.set_fan_state(True)
 
     def motion_updated(self, standard_deviation):
         Config.logger.info("[Motion_STD]" + str(standard_deviation))

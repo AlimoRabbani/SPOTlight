@@ -1,5 +1,6 @@
 __author__ = 'Alimohammad'
 import smbus
+import RPi.GPIO as GPIO
 import time, math
 import threading
 from spotlight_config import Config
@@ -15,6 +16,9 @@ class RPi:
 
     @staticmethod
     def start(temperature_callback, motion_callback):
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(Config.config["RPi_FAN_PIN"], GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup(Config.config["RPi_HEATER_PIN"], GPIO.OUT, initial=GPIO.LOW)
         RPi.temperature_callback = temperature_callback
         RPi.motion_callback = motion_callback
 
@@ -61,9 +65,20 @@ class RPi:
 
     @staticmethod
     def set_fan_speed(speed):
-        speed_12bit = int(speed * 4096)
+        # Converting 0.0-1.0 fan speed to a 12 bit voltage based number understandable by the ADC
+        speed_voltage = (Config.config["fan_max_speed_voltage"] - Config.config["fan_min_speed_voltage"])*speed\
+                        + Config.config["fan_min_speed_voltage"]
+        speed_12bit = int((speed_voltage/Config.config["RPi_MAX_VOLTAGE"]) * 4096)
         RPi.bus.write_word_data(int(Config.config["RPi_DAC_ADDRESS"], 16),
                                 int(Config.config["RPi_DAC_CMD"], 16), RPi.reverse_byte_order(speed_12bit))
+
+    @staticmethod
+    def set_fan_state(on):
+        GPIO.output(Config.config["RPi_FAN_PIN"], on)
+
+    @staticmethod
+    def set_heater_state(on):
+        GPIO.output(Config.config["RPi_HEATER_PIN"], on)
 
     @staticmethod
     def reverse_byte_order(data):
@@ -75,3 +90,4 @@ class RPi:
             val |= (d << (8 * (byte_count - i - 1)))
             data >>= 8
         return val
+
