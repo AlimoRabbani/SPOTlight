@@ -12,8 +12,8 @@
 "RPi_MOTION_CMD":"0x63",
 "RPi_DAC_CMD":"0x80",
 "RPi_MAX_VOLTAGE":4.9,
-"RPi_FAN_PIN":20,
-"RPi_HEATER_PIN":21,
+"RPi_FAN_PIN":16,
+"RPi_HEATER_PIN":18,
 "fan_max_speed_voltage":1.1,
 "fan_min_speed_voltage":2.5
 }
