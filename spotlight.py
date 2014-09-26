@@ -2,23 +2,25 @@
 
 __author__ = 'Alimohammad'
 
-from spotlight_devices import RPi
+from spotlight_config import Config
+Config.initialize()
+
+# from spotlight_devices import RPi
 import time
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 
 # from pmv import PMVs
-from spotlight_update import Updater
-from spotlight_config import Config
-from spotlight_controls import Reactive
-
-Config.initialize()
+# from spotlight_update import Updater
+# from spotlight_controls import Reactive
+from db import spotlight_collection
 
 def main():
     Config.logger.info("SPOTlight v%s Started" % Config.config["version_id"])
-    Updater.start()
-    controller = Reactive()
-    controller.start()
-    RPi.start(controller.temperature_updated, controller.motion_updated)
+    # Updater.start()
+    # controller = Reactive()
+    # controller.start()
+    # RPi.start(controller.temperature_updated, controller.motion_updated)
+
     # logger.debug(str(PMV.calculate_pmv(0.5, 25.0, 25.0, 1.2, 0.0, 100.0)))
 
     try:
@@ -26,7 +28,7 @@ def main():
             time.sleep(10)
     except KeyboardInterrupt:
         Config.logger.info("Keyboard interrupt received. Cleaning up...")
-        GPIO.cleanup()
+        # GPIO.cleanup()
 
 
 

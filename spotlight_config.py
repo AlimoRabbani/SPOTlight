@@ -6,6 +6,7 @@ import logging
 
 class Config:
     config = dict()
+    db_config = dict()
     logger = logging.getLogger("SPOTlight")
 
     def __init__(self):
@@ -13,8 +14,8 @@ class Config:
 
     @staticmethod
     def initialize():
-        json_data = open("config.json").read()
-        Config.config = json.loads(json_data)
+        Config.config = json.loads(open("config.json").read())
+        Config.db_config = json.loads(open("db.json").read())
 
         logger = logging.getLogger("SPOTlight")
         logger.setLevel(logging.DEBUG)
