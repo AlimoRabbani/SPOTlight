@@ -21,20 +21,22 @@ class DeviceService(rpyc.Service):
     def exposed_set_heater_state(on):
         RPi.set_heater_state(on)
 
-    def temperature_update_handler(self, temperature):
-        decision_conn = rpyc.connect(Config.config["decision_service_address"], Config.config["decision_service_port"])
-        decision_conn.root.temperature_updated(temperature)
 
-    def motion_update_handler(self, motion):
-        decision_conn = rpyc.connect(Config.config["decision_service_address"], Config.config["decision_service_port"])
-        decision_conn.root.motion_updated(motion)
+def temperature_update_handler(temperature):
+    decision_conn = rpyc.connect(Config.config["decision_service_address"], Config.config["decision_service_port"])
+    decision_conn.root.temperature_updated(temperature)
+
+
+def motion_update_handler(motion):
+    decision_conn = rpyc.connect(Config.config["decision_service_address"], Config.config["decision_service_port"])
+    decision_conn.root.motion_updated(motion)
 
 
 if __name__ == "__main__":
     Config.initialize()
     server = ThreadedServer(DeviceService, hostname=Config.config["device_service_address"],
                             port=Config.config["device_service_port"], logger=Config.logger, authenticator=None)
-    RPi.start(server.temperature_update_handler, server.motion_update_handler)
+    RPi.start(temperature_update_handler, motion_update_handler)
     try:
         server.start()
     except KeyboardInterrupt:

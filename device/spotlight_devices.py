@@ -13,8 +13,6 @@ class RPi:
         pass
 
     bus = smbus.SMBus(1)
-    temperature_callback = None
-    motion_callback = None
 
     @staticmethod
     def start(temperature_callback, motion_callback):
