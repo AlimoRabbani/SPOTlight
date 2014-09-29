@@ -1,7 +1,8 @@
 __author__ = 'Alimohammad'
 import smbus
-import device_worker.GPIO as GPIO
-import time, math
+import RPi.GPIO as GPIO
+import time
+import math
 import threading
 
 from rpi_config import Config
