@@ -6,6 +6,4 @@
 
 SPOTlight_key.private
 
-rpi.log
-
-spotlight.log
+*.log

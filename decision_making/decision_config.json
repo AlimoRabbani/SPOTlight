@@ -1,0 +1,10 @@
+{"device_service_address":"localhost",
+"device_service_port":12345,
+"decision_service_address":"localhost",
+"decision_service_port":12346,
+"version_id":"1.0",
+"update_url":"http://www.onible.com/SPOTlight/update.json",
+"main_file":"SPOTlight.py",
+"public_key":"SPOTlight_key.public",
+"update_interval":43200
+}

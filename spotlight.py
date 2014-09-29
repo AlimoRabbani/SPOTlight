@@ -5,13 +5,13 @@ __author__ = 'Alimohammad'
 from spotlight_config import Config
 Config.initialize()
 
-from spotlight_devices import RPi
+from device.spotlight_devices import RPi
 import time
 import RPi.GPIO as GPIO
 
 # from pmv import PMVs
 from spotlight_update import Updater
-from spotlight_controls import Reactive
+from decision_making.spotlight_controls import Reactive
 
 
 def main():
