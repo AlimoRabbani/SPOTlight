@@ -18,6 +18,7 @@ class RPi:
 
     @staticmethod
     def start(temperature_callback, motion_callback):
+        GPIO.cleanup()
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(Config.config["RPi_FAN_PIN"], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(Config.config["RPi_HEATER_PIN"], GPIO.OUT, initial=GPIO.LOW)
