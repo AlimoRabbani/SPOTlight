@@ -38,9 +38,10 @@ class RPi:
                                           int(Config.config["RPi_TMP_CMD"], 16))
             data = RPi.reverse_byte_order(data) & 0x0fff
             temperature = (((data/4096.00)*5)-1.375)*1000/22.5
-            temperature_update_thread = threading.Thread(target=RPi.temperature_callback, args=(temperature, ))
-            temperature_update_thread.daemon = True
-            temperature_update_thread.start()
+            RPi.temperature_callback(temperature)
+            # temperature_update_thread = threading.Thread(target=RPi.temperature_callback, args=(temperature, ))
+            # temperature_update_thread.daemon = True
+            # temperature_update_thread.start()
             time.sleep(Config.config["temperature_reading_resolution"])
 
     @staticmethod
