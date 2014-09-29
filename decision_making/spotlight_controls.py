@@ -19,5 +19,5 @@ class DecisionService(rpyc.Service):
 if __name__ == "__main__":
     Config.initialize()
     server = ThreadedServer(DecisionService, hostname=Config.config["decision_service_address"],
-                            port=Config.config["decision_service_port"], logger=None, authenticator=None)
+                            port=Config.config["decision_service_port"], logger=Config.logger, authenticator=None)
     server.start()
