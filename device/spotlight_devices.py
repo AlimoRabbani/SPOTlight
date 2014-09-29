@@ -13,6 +13,8 @@ class RPi:
         pass
 
     bus = smbus.SMBus(1)
+    temperature_callback = None
+    motion_callback = None
 
     @staticmethod
     def start(temperature_callback, motion_callback):
@@ -38,10 +40,9 @@ class RPi:
                                           int(Config.config["RPi_TMP_CMD"], 16))
             data = RPi.reverse_byte_order(data) & 0x0fff
             temperature = (((data/4096.00)*5)-1.375)*1000/22.5
-            RPi.temperature_callback(temperature)
-            # temperature_update_thread = threading.Thread(target=RPi.temperature_callback, args=(temperature, ))
-            # temperature_update_thread.daemon = True
-            # temperature_update_thread.start()
+            temperature_update_thread = threading.Thread(target=RPi.temperature_callback.__func__, args=(temperature, ))
+            temperature_update_thread.daemon = True
+            temperature_update_thread.start()
             time.sleep(Config.config["temperature_reading_resolution"])
 
     @staticmethod
