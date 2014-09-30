@@ -36,11 +36,12 @@ def motion_update_handler(motion):
 
 if __name__ == "__main__":
     Config.initialize()
+    Config.logger.info("SPOTlight device manager started...")
     server = ThreadedServer(DeviceService, hostname=Config.config["device_service_address"],
-                            port=Config.config["device_service_port"], logger=None, authenticator=None)
+                            port=Config.config["device_service_port"], logger=Config.service_logger,
+                            authenticator=None)
     RPi.start(temperature_update_handler, motion_update_handler)
-    try:
-        server.start()
-    except KeyboardInterrupt:
-        Config.logger.info("Keyboard interrupt received. Cleaning up...")
-        GPIO.cleanup()
+    server.start()
+    #device manager will block on this line to listen for incoming RPC requests
+    Config.logger.info("SPOTlight device manager shutting down...")
+    GPIO.cleanup()

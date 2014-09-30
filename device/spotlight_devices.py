@@ -18,7 +18,6 @@ class RPi:
 
     @staticmethod
     def start(temperature_callback, motion_callback):
-        GPIO.cleanup()
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(Config.config["RPi_FAN_PIN"], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(Config.config["RPi_HEATER_PIN"], GPIO.OUT, initial=GPIO.LOW)
@@ -40,6 +39,7 @@ class RPi:
                                           int(Config.config["RPi_TMP_CMD"], 16))
             data = RPi.reverse_byte_order(data) & 0x0fff
             temperature = (((data/4096.00)*5)-1.375)*1000/22.5
+            Config.logger.info("[Temperature][%s]" % str(temperature))
             temperature_update_thread = threading.Thread(target=RPi.temperature_callback.__func__, args=(temperature, ))
             temperature_update_thread.daemon = True
             temperature_update_thread.start()
@@ -53,12 +53,13 @@ class RPi:
             data = RPi.bus.read_word_data(int(Config.config["RPi_ADC_ADDRESS"], 16),
                                           int(Config.config["RPi_MOTION_CMD"], 16))
             raw_motion = (RPi.reverse_byte_order(data) & 0x0fff) / 4.096
-            Config.logger.debug("[Motion]" + str(raw_motion))
+            Config.logger.info("[Motion][%s]" % str(raw_motion))
             counter += 1
             sum_of_motion += raw_motion
             sum_of_squares += pow(raw_motion, 2)
             if counter == Config.config["occupancy_std_interval"]*1/Config.config["motion_reading_resolution"]:
                 standard_deviation = math.sqrt((sum_of_squares / counter) - pow(sum_of_motion/counter, 2))
+                Config.logger.info("[Motion_STD][%s]" % str(standard_deviation))
                 motion_update_thread = threading.Thread(target=RPi.motion_callback, args=(standard_deviation, ))
                 motion_update_thread.daemon = True
                 motion_update_thread.start()

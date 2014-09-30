@@ -11,9 +11,9 @@ class ReactiveControl:
     @staticmethod
     def temperature_updated(temperature):
         db.insert({"temperature": temperature}, "Measurements")
-        Config.logger.info("[Temperature]" + str(temperature))
+        Config.logger.info("[Temperature][%s]" % str(temperature))
 
     @staticmethod
     def motion_updated(standard_deviation):
         db.insert({"motion": standard_deviation}, "Measurements")
-        Config.logger.info("[Motion_STD]" + str(standard_deviation))
+        Config.logger.info("[Motion_STD][%s]" % str(standard_deviation))

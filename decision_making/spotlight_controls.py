@@ -18,6 +18,9 @@ class DecisionService(rpyc.Service):
 
 if __name__ == "__main__":
     Config.initialize()
+    Config.logger.info("SPOTlight device manager started...")
     server = ThreadedServer(DecisionService, hostname=Config.config["decision_service_address"],
-                            port=Config.config["decision_service_port"], logger=None, authenticator=None)
+                            port=Config.config["decision_service_port"], logger=Config.service_logger,
+                            authenticator=None)
     server.start()
+    Config.logger.info("SPOTlight decision maker shutting down...")

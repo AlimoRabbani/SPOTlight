@@ -8,6 +8,7 @@ class Config:
     config = dict()
     db_config = dict()
     logger = logging.getLogger("SPOTlight Decision")
+    service_logger = logging.getLogger("SPOTlight Decision Services")
 
     def __init__(self):
         pass
@@ -33,6 +34,23 @@ class Config:
 
         logger.addHandler(file_handler)
         logger.addHandler(console_handler)
+
+        service_logger = logging.getLogger("SPOTlight Decision Services")
+        service_logger.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+        file_handler = logging.FileHandler('decision_services.log')
+        file_handler.setLevel(logging.INFO)
+
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+
+        file_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+
+        service_logger.addHandler(file_handler)
+        service_logger.addHandler(console_handler)
+
         Config.logger.info("Configurations loaded...")
 
     @staticmethod
