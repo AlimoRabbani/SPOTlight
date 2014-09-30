@@ -58,7 +58,7 @@ if __name__ == "__main__":
     Updater.start()
     server = ThreadedServer(DeviceService, hostname=Config.service_config["device_service_address"],
                             port=Config.service_config["device_service_port"], logger=Config.service_logger,
-                            authenticator=None)
+                            authenticator=None, protocol_config={"allow_public_attrs" : True})
     RPi.start(temperature_update_handler, motion_update_handler)
     server.start()
     #device manager will block on this line to listen for incoming RPC requests

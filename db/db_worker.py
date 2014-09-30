@@ -28,7 +28,7 @@ if __name__ == "__main__":
     Updater.start()
     server = ThreadedServer(DBService, hostname=Config.service_config["db_service_address"],
                             port=Config.service_config["db_service_port"], logger=Config.service_logger,
-                            authenticator=None)
+                            authenticator=None, protocol_config={"allow_public_attrs" : True})
     server.start()
     #device manager will block on this line to listen for incoming RPC requests
     Config.logger.info("SPOTlight device manager shutting down...")
