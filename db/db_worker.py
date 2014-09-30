@@ -17,7 +17,6 @@ class DBService(rpyc.Service):
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         spotlight_collection = collection.Collection(client.spotlight, collection_name)
         common_fields = {"timestamp": datetime.datetime.utcnow()}
-        document = json.loads(document)
         Config.logger.info("insert: %s into %s" % (document, collection_name))
         spotlight_collection.insert(dict(common_fields.items() + document.items()))
         client.close()
