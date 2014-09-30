@@ -25,6 +25,6 @@ if __name__ == "__main__":
     Updater.start()
     server = ThreadedServer(DecisionService, hostname=Config.service_config["control_service_address"],
                             port=Config.service_config["control_service_port"], logger=Config.service_logger,
-                            authenticator=None, protocol_config={"allow_public_attrs" : True})
+                            authenticator=None)
     server.start()
     Config.logger.info("SPOTlight decision maker shutting down...")
