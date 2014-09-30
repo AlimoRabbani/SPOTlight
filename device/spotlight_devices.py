@@ -53,7 +53,7 @@ class RPi:
             data = RPi.bus.read_word_data(int(Config.rpi_config["RPi_ADC_ADDRESS"], 16),
                                           int(Config.rpi_config["RPi_MOTION_CMD"], 16))
             raw_motion = (RPi.reverse_byte_order(data) & 0x0fff) / 4.096
-            Config.logger.info("[Motion][%s]" % str(raw_motion))
+            Config.logger.debug("[Motion][%s]" % str(raw_motion))
             counter += 1
             sum_of_motion += raw_motion
             sum_of_squares += pow(raw_motion, 2)

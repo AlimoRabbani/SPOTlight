@@ -12,13 +12,23 @@ from db_updater import Updater
 
 class DBService(rpyc.Service):
     @staticmethod
-    def exposed_insert(document, collection_name):
+    def exposed_insert_temperature(temperature, user_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
-        spotlight_collection = collection.Collection(client.spotlight, collection_name)
-        common_fields = {"timestamp": datetime.datetime.utcnow()}
-        Config.logger.info("insert: %s into %s" % (document, collection_name))
-        spotlight_collection.insert(dict(list(common_fields.iteritems()) + list(document.iteritems())))
+        spotlight_collection = collection.Collection(client.spotlight, "Temperatures")
+        document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "temperature": float(temperature)}
+        Config.logger.info("insert temperature %s" % str(temperature))
+        spotlight_collection.insert(document)
+        client.close()
+
+    @staticmethod
+    def exposed_insert_motion(motion, user_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        spotlight_collection = collection.Collection(client.spotlight, "Motions")
+        document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "motion": float(motion)}
+        Config.logger.info("insert motion %s" % str(motion))
+        spotlight_collection.insert(document)
         client.close()
 
 if __name__ == "__main__":
@@ -27,7 +37,7 @@ if __name__ == "__main__":
     Updater.start()
     server = ThreadedServer(DBService, hostname=Config.service_config["db_service_address"],
                             port=Config.service_config["db_service_port"], logger=Config.service_logger,
-                            authenticator=None, protocol_config={"allow_public_attrs" : True})
+                            authenticator=None)
     server.start()
     #device manager will block on this line to listen for incoming RPC requests
     Config.logger.info("SPOTlight device manager shutting down...")
