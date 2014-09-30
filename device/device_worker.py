@@ -29,6 +29,7 @@ def temperature_update_handler(temperature):
 
 
 def motion_update_handler(motion):
+    Config.logger.debug("motion update handler called")
     decision_conn = rpyc.connect(Config.config["decision_service_address"], Config.config["decision_service_port"])
     decision_conn.root.motion_updated(motion)
     decision_conn.close()

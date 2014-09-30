@@ -2,7 +2,7 @@
 "device_service_port":12345,
 "decision_service_address":"localhost",
 "decision_service_port":12346,
-"occupancy_std_interval":120,
+"occupancy_std_interval":20,
 "temperature_reading_resolution":10,
 "motion_reading_resolution":0.5,
 "RPi_ADC_ADDRESS":"0x34",

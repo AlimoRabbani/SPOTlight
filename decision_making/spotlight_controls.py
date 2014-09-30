@@ -14,6 +14,7 @@ class DecisionService(rpyc.Service):
 
     @staticmethod
     def exposed_motion_updated(standard_deviation):
+        Config.logger.debug("motion update handler called")
         ReactiveControl.motion_updated(standard_deviation)
 
 if __name__ == "__main__":
