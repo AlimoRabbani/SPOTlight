@@ -1,0 +1,8 @@
+{"device_service_address":"localhost",
+"device_service_port":12345,
+"control_service_address":"localhost",
+"control_service_port":12346,
+"db_service_address":"localhost",
+"db_service_port":12347,
+"user_id":"alimohammad"
+}

@@ -5,8 +5,9 @@ import logging
 
 
 class Config:
-    config = dict()
-    db_config = dict()
+    decision_config = dict()
+    service_config = dict()
+    update_config = dict()
     logger = logging.getLogger("SPOTlight Decision")
     service_logger = logging.getLogger("SPOTlight Decision Services")
 
@@ -15,15 +16,15 @@ class Config:
 
     @staticmethod
     def initialize():
-        Config.config = json.loads(open("decision_config.json").read())
-        Config.db_config = json.loads(open("db.json").read())
-        Config.config["mac_address"] = Config.get_mac('wlan0')
+        Config.decision_config = json.loads(open("config_decision.json").read())
+        Config.service_config = json.loads(open("config_service.json").read())
+        Config.update_config = json.loads(open("config_update.json").read())
 
         logger = logging.getLogger("SPOTlight Decision")
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler('decision.log')
+        file_handler = logging.FileHandler('control.log')
         file_handler.setLevel(logging.INFO)
 
         console_handler = logging.StreamHandler()
@@ -39,7 +40,7 @@ class Config:
         service_logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler('decision_services.log')
+        file_handler = logging.FileHandler('control_services.log')
         file_handler.setLevel(logging.INFO)
 
         file_handler.setFormatter(formatter)
@@ -47,12 +48,3 @@ class Config:
         service_logger.addHandler(file_handler)
 
         Config.logger.info("Configurations loaded...")
-
-    @staticmethod
-    def get_mac(interface):
-        # Return the MAC address of interface
-        try:
-            mac_address = open("/sys/class/net/%s/address" % interface).readline()
-        except:
-            mac_address = "00:00:00:00:00:00"
-        return mac_address[0:17]

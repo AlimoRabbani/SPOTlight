@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 __author__ = 'Alimohammad'
 
 import rpyc
@@ -5,7 +7,8 @@ from rpyc.utils.server import ThreadedServer
 import RPi.GPIO as GPIO
 
 from spotlight_devices import RPi
-from rpi_config import Config
+from config import Config
+from device_updater import Updater
 
 
 class DeviceService(rpyc.Service):
@@ -23,13 +26,15 @@ class DeviceService(rpyc.Service):
 
 
 def temperature_update_handler(temperature):
-    decision_conn = rpyc.connect(Config.config["decision_service_address"], Config.config["decision_service_port"])
+    decision_conn = rpyc.connect(Config.service_config["control_service_address"],
+                                 Config.service_config["control_service_port"])
     decision_conn.root.temperature_updated(temperature)
     decision_conn.close()
 
 
 def motion_update_handler(motion):
-    decision_conn = rpyc.connect(Config.config["decision_service_address"], Config.config["decision_service_port"])
+    decision_conn = rpyc.connect(Config.service_config["control_service_address"],
+                                 Config.service_config["control_service_port"])
     decision_conn.root.motion_updated(motion)
     decision_conn.close()
 
@@ -37,8 +42,9 @@ def motion_update_handler(motion):
 if __name__ == "__main__":
     Config.initialize()
     Config.logger.info("SPOTlight device manager started...")
-    server = ThreadedServer(DeviceService, hostname=Config.config["device_service_address"],
-                            port=Config.config["device_service_port"], logger=Config.service_logger,
+    Updater.start()
+    server = ThreadedServer(DeviceService, hostname=Config.service_config["device_service_address"],
+                            port=Config.service_config["device_service_port"], logger=Config.service_logger,
                             authenticator=None)
     RPi.start(temperature_update_handler, motion_update_handler)
     server.start()
