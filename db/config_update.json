@@ -1,0 +1,6 @@
+{"version_id":"1.0",
+"update_url":"http://www.onible.com/SPOTlight/db/update.json",
+"main_file":"db_worker.py",
+"public_key":"SPOTlight_key.public",
+"update_interval":3600
+}

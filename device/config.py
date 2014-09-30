@@ -43,7 +43,6 @@ class Config:
         file_handler = logging.FileHandler('device_services.log')
         file_handler.setLevel(logging.DEBUG)
 
-
         file_handler.setFormatter(formatter)
 
         service_logger.addHandler(file_handler)
