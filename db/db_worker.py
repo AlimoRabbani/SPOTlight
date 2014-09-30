@@ -18,7 +18,7 @@ class DBService(rpyc.Service):
         spotlight_collection = collection.Collection(client.spotlight, collection_name)
         common_fields = {"timestamp": datetime.datetime.utcnow()}
         Config.logger.info("insert: %s into %s" % (document, collection_name))
-        spotlight_collection.insert(dict(common_fields.items() + document.items()))
+        spotlight_collection.insert(dict(list(common_fields.iteritems()) + list(document.iteritems())))
         client.close()
 
 if __name__ == "__main__":
