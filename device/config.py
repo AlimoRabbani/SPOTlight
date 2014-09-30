@@ -8,7 +8,6 @@ class Config:
     rpi_config = dict()
     service_config = dict()
     update_config = dict()
-    db_config = dict()
     logger = logging.getLogger("SPOTlight RPi")
     service_logger = logging.getLogger("SPOTlight Device Services")
 
@@ -20,7 +19,6 @@ class Config:
         Config.rpi_config = json.loads(open("config_rpi.json").read())
         Config.service_config = json.loads(open("config_service.json").read())
         Config.update_config = json.loads(open("config_update.json").read())
-        Config.db_config = json.loads(open("config_db.json").read())
 
         logger = logging.getLogger("SPOTlight RPi")
         logger.setLevel(logging.DEBUG)
