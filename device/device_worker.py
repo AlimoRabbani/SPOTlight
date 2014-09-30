@@ -26,17 +26,30 @@ class DeviceService(rpyc.Service):
 
 
 def temperature_update_handler(temperature):
-    decision_conn = rpyc.connect(Config.service_config["control_service_address"],
-                                 Config.service_config["control_service_port"])
-    decision_conn.root.temperature_updated(temperature)
-    decision_conn.close()
-
+    try:
+        decision_conn = rpyc.connect(Config.service_config["control_service_address"],
+                                     Config.service_config["control_service_port"])
+        decision_conn.root.temperature_updated(temperature)
+        decision_conn.close()
+    except Exception, e:
+        Config.logger.warning("Error sending temperature update to %s:%s" %
+                            (Config.service_config["control_service_address"],
+                             Config.service_config["control_service_port"]))
+        Config.logger.error(e)
+        decision_conn.close()
 
 def motion_update_handler(motion):
-    decision_conn = rpyc.connect(Config.service_config["control_service_address"],
-                                 Config.service_config["control_service_port"])
-    decision_conn.root.motion_updated(motion)
-    decision_conn.close()
+    try:
+        decision_conn = rpyc.connect(Config.service_config["control_service_address"],
+                                     Config.service_config["control_service_port"])
+        decision_conn.root.motion_updated(motion)
+        decision_conn.close()
+    except Exception, e:
+        Config.logger.warning("Error sending motion update to %s:%s" %
+                            (Config.service_config["control_service_address"],
+                             Config.service_config["control_service_port"]))
+        Config.logger.error(e)
+        decision_conn.close()
 
 
 if __name__ == "__main__":
