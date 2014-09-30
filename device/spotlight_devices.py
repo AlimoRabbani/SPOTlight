@@ -57,7 +57,7 @@ class RPi:
             counter += 1
             sum_of_motion += raw_motion
             sum_of_squares += pow(raw_motion, 2)
-            if counter == Config.config["occupancy_std_interval"]*1/Config.config["motion_reading_resolution"]:
+            if counter == int(Config.config["occupancy_std_interval"]*1/Config.config["motion_reading_resolution"]):
                 standard_deviation = math.sqrt((sum_of_squares / counter) - pow(sum_of_motion/counter, 2))
                 Config.logger.info("[Motion_STD][%s]" % str(standard_deviation))
                 motion_update_thread = threading.Thread(target=RPi.motion_callback, args=(standard_deviation, ))
