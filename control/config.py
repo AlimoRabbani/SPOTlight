@@ -5,7 +5,7 @@ import logging
 
 
 class Config:
-    decision_config = dict()
+    control_config = dict()
     service_config = dict()
     update_config = dict()
     logger = logging.getLogger("SPOTlight Decision")
@@ -16,7 +16,7 @@ class Config:
 
     @staticmethod
     def initialize():
-        Config.decision_config = json.loads(open("config_decision.json").read())
+        Config.control_config = json.loads(open("config_control.json").read())
         Config.service_config = json.loads(open("config_service.json").read())
         Config.update_config = json.loads(open("config_update.json").read())
 

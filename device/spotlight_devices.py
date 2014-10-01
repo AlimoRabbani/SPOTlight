@@ -90,6 +90,11 @@ class RPi:
     @staticmethod
     def set_heater_state(on):
         # db.insert({"heater_state": on}, "Events")
+        RPi.set_heater_state(on)
+        if on:
+            RPi.set_fan_speed(1.0)
+        else:
+            RPi.set_fan_speed(0.0)
         GPIO.output(Config.rpi_config["RPi_HEATER_PIN"], on)
         Config.logger.info("[Heater_State][%s]" % str(on))
 

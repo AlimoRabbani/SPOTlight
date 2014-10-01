@@ -1,0 +1,5 @@
+{"occupancy_bucket_size":2,
+"occupancy_motion_threshold":17.25,
+"pmv_threshold":0.5,
+"max_fan_speed":2.1
+}

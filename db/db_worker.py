@@ -31,6 +31,16 @@ class DBService(rpyc.Service):
         spotlight_collection.insert(document)
         client.close()
 
+    @staticmethod
+    def exposed_insert_occupancy(occupancy, user_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        spotlight_collection = collection.Collection(client.spotlight, "Occupancy")
+        document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "motion": int(occupancy)}
+        Config.logger.info("insert occupancy %s" % str(occupancy))
+        spotlight_collection.insert(document)
+        client.close()
+
 if __name__ == "__main__":
     Config.initialize()
     Config.logger.info("SPOTlight db manager started...")

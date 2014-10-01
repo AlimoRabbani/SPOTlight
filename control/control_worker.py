@@ -4,6 +4,7 @@ __author__ = 'Alimohammad'
 
 import rpyc
 from rpyc.utils.server import ThreadedServer
+import threading
 
 from reactive_control import ReactiveControl
 from config import Config
@@ -13,11 +14,15 @@ from control_updater import Updater
 class DecisionService(rpyc.Service):
     @staticmethod
     def exposed_temperature_updated(temperature):
-        ReactiveControl.temperature_updated(temperature)
+        temperature_thread = threading.Thread(target=ReactiveControl.temperature_updated, args=(temperature, ))
+        temperature_thread.daemon = True
+        temperature_thread.start()
 
     @staticmethod
     def exposed_motion_updated(standard_deviation):
-        ReactiveControl.motion_updated(standard_deviation)
+        motion_thread = threading.Thread(target=ReactiveControl.motion_updated, args=(standard_deviation, ))
+        motion_thread.daemon = True
+        motion_thread.start()
 
 if __name__ == "__main__":
     Config.initialize()

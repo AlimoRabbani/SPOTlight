@@ -31,6 +31,7 @@ def temperature_update_handler(temperature):
                                     Config.service_config["control_service_port"])
         try:
             control_conn.root.temperature_updated(temperature)
+            control_conn.close()
         except Exception, e:
             Config.logger.warning("Error sending temperature update to %s:%s" %
                                   (Config.service_config["control_service_address"],
@@ -50,6 +51,7 @@ def motion_update_handler(motion):
                                     Config.service_config["control_service_port"])
         try:
             control_conn.root.motion_updated(motion)
+            control_conn.close()
         except Exception, e:
             Config.logger.warning("Error sending motion update to %s:%s" %
                                   (Config.service_config["control_service_address"],
