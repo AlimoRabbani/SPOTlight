@@ -35,9 +35,21 @@ class DBService(rpyc.Service):
     def exposed_insert_occupancy(occupancy, user_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
-        spotlight_collection = collection.Collection(client.spotlight, "Occupancy")
+        spotlight_collection = collection.Collection(client.spotlight, "Occupancies")
         document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "motion": int(occupancy)}
         Config.logger.info("insert occupancy %s" % str(occupancy))
+        spotlight_collection.insert(document)
+        client.close()
+
+    @staticmethod
+    def exposed_insert_state(heat_state, cool_state, fan_speed, user_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        spotlight_collection = collection.Collection(client.spotlight, "States")
+        document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "heat": heat_state,
+                    "cool": cool_state, "speed": fan_speed}
+        Config.logger.info("insert state [Heat][%s][Fan][%s][Speed][%s]" %
+                           (str(heat_state), str(cool_state), str(fan_speed)))
         spotlight_collection.insert(document)
         client.close()
 

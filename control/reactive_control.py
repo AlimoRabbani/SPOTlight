@@ -62,7 +62,7 @@ class ReactiveControl:
     def update_occupancy_bucket(standard_deviation):
         #update occupancy bucket based on threshold
         if standard_deviation > Config.control_config["occupancy_motion_threshold"]:
-            if ReactiveControl.occupancy_bucket_value < Config.control_config["occupancy_motion_threshold"]:
+            if ReactiveControl.occupancy_bucket_value < Config.control_config["occupancy_bucket_size"]:
                 ReactiveControl.occupancy_bucket_value += 1
         elif ReactiveControl.occupancy_bucket_value > 0:
             ReactiveControl.occupancy_bucket_value -= 1
@@ -85,24 +85,50 @@ class ReactiveControl:
         ppv = ReactiveControl.b +\
               ReactiveControl.a * PMV.calculate_pmv(0.5, float(ReactiveControl.current_temperature),
                                                     float(ReactiveControl.current_temperature), 1.2, 0.0, 100.0)
-        if ReactiveControl.occupancy_bucket_value == 0 and (ReactiveControl.current_fan_state or ReactiveControl.current_heater_state):
-            ReactiveControl.set_heater_state(False)
-            ReactiveControl.set_fan_state(False)
-            ReactiveControl.set_fan_speed(0)
-        elif ReactiveControl.occupancy_bucket_value > 0 and ReactiveControl.current_fan_state and ppv < Config.control_config["pmv_threshold"]:
-            ReactiveControl.set_fan_speed(0)
-            ReactiveControl.set_fan_state(False)
-        elif ReactiveControl.occupancy_bucket_value > 0 and ReactiveControl.current_heater_state and ppv > 0 - Config.control_config["pmv_threshold"]:
-            ReactiveControl.set_heater_state(False)
-        elif ReactiveControl.occupancy_bucket_value == Config.control_config["occupancy_bucket_size"] and ppv > Config.control_config["pmv_threshold"]:
+        if ReactiveControl.occupancy_bucket_value == 0 and ReactiveControl.current_heater_state:
+            if ReactiveControl.set_heat_state(False):
+                ReactiveControl.insert_state_to_db()
+        elif ReactiveControl.occupancy_bucket_value == 0 and ReactiveControl.current_fan_state:
+            if ReactiveControl.set_cool_state(False, 0):
+                ReactiveControl.insert_state_to_db()
+        elif (ReactiveControl.occupancy_bucket_value > 0 and ReactiveControl.current_fan_state
+              and ppv < Config.control_config["pmv_threshold"]):
+            if ReactiveControl.set_cool_state(False, 0):
+                ReactiveControl.insert_state_to_db()
+        elif (ReactiveControl.occupancy_bucket_value > 0 and ReactiveControl.current_heater_state
+              and ppv > 0 - Config.control_config["pmv_threshold"]):
+            if ReactiveControl.set_heat_state(False):
+                ReactiveControl.insert_state_to_db()
+        elif (ReactiveControl.occupancy_bucket_value == Config.control_config["occupancy_bucket_size"] and
+                      ppv > Config.control_config["pmv_threshold"]):
             speed = 2.1
             #calculate the perfect air speed
-            ReactiveControl.set_fan_speed(speed)
-            ReactiveControl.set_fan_state(True)
-        elif ReactiveControl.occupancy_bucket_value == Config.control_config["occupancy_bucket_size"] and ReactiveControl.current_heater_state is False and ppv < 0 - Config.control_config["pmv_threshold"]:
-            ReactiveControl.set_heater_state(True)
+            if ReactiveControl.set_cool_state(True, speed):
+                ReactiveControl.insert_state_to_db()
+        elif (ReactiveControl.occupancy_bucket_value == Config.control_config["occupancy_bucket_size"]
+              and ReactiveControl.current_heater_state is False and ppv < 0 - Config.control_config["pmv_threshold"]):
+            if ReactiveControl.set_heat_state(True):
+                ReactiveControl.insert_state_to_db()
+
+
     @staticmethod
-    def set_heater_state(on):
+    def insert_state_to_db():
+        try:
+            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
+            try:
+                db_conn.root.insert_state(ReactiveControl.current_heater_state, ReactiveControl.current_fan_state,
+                                          ReactiveControl.current_air_speed, Config.service_config["user_id"])
+                db_conn.close()
+            except Exception, e:
+                Config.logger.warning("There was a problem inserting state to db")
+                Config.logger.error(e)
+                db_conn.close()
+        except Exception, e:
+            Config.logger.warning("There was a problem connecting to db")
+            Config.logger.error(e)
+
+    @staticmethod
+    def set_heat_state(on):
         try:
             device_conn = rpyc.connect(Config.service_config["device_service_address"],
                                        Config.service_config["device_service_port"])
@@ -110,57 +136,50 @@ class ReactiveControl:
                 device_conn.root.set_heater_state(on)
                 device_conn.close()
                 ReactiveControl.current_heater_state = on
+                if on:
+                    ReactiveControl.current_air_speed = Config.control_config["max_fan_speed"]
+                else:
+                    ReactiveControl.current_air_speed = 0
+                Config.logger.info("[Set Heater State][%s]" % str(on))
+                return True
             except Exception, e:
                 Config.logger.warning("Error sending heater state to %s:%s" %
                                       (Config.service_config["device_service_address"],
                                        Config.service_config["device_service_port"]))
                 Config.logger.error(e)
                 device_conn.close()
+                return False
         except Exception, e:
             Config.logger.warning("Error connecting to %s:%s" %
                                   (Config.service_config["device_service_address"],
                                    Config.service_config["device_service_port"]))
             Config.logger.error(e)
+            return False
 
     @staticmethod
-    def set_fan_state(on):
+    def set_cool_state(on, speed):
+        relative_speed = speed / Config.control_config["max_fan_speed"]
         try:
             device_conn = rpyc.connect(Config.service_config["device_service_address"],
                                        Config.service_config["device_service_port"])
             try:
-                device_conn.root.set_fan_state(on)
+                device_conn.root.set_fan_state(on, relative_speed)
                 device_conn.close()
                 ReactiveControl.current_fan_state = on
+                ReactiveControl.current_air_speed = speed
+                Config.logger.info("[Set Fan State][%s]" % str(on))
+                Config.logger.info("[Set Fan Speed][Absolute][%s][Relative][%s]" % (str(speed), str(relative_speed)))
+                return True
             except Exception, e:
                 Config.logger.warning("Error sending fan state to %s:%s" %
                                       (Config.service_config["device_service_address"],
                                        Config.service_config["device_service_port"]))
                 Config.logger.error(e)
                 device_conn.close()
+                return False
         except Exception, e:
             Config.logger.warning("Error connecting to %s:%s" %
                                   (Config.service_config["device_service_address"],
                                    Config.service_config["device_service_port"]))
             Config.logger.error(e)
-
-    @staticmethod
-    def set_fan_speed(speed):
-        relative_speed = speed / Config.control_config["max_fan_speed"]
-        try:
-            device_conn = rpyc.connect(Config.service_config["device_service_address"],
-                                       Config.service_config["device_service_port"])
-            try:
-                device_conn.root.set_fan_speed(relative_speed)
-                device_conn.close()
-                ReactiveControl.current_air_speed = speed
-            except Exception, e:
-                Config.logger.warning("Error sending fan speed to %s:%s" %
-                                      (Config.service_config["device_service_address"],
-                                       Config.service_config["device_service_port"]))
-                Config.logger.error(e)
-                device_conn.close()
-        except Exception, e:
-            Config.logger.warning("Error connecting to %s:%s" %
-                                  (Config.service_config["device_service_address"],
-                                   Config.service_config["device_service_port"]))
-            Config.logger.error(e)
+            return False

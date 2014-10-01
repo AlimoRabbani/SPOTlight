@@ -13,12 +13,9 @@ from device_updater import Updater
 
 class DeviceService(rpyc.Service):
     @staticmethod
-    def exposed_set_fan_speed(speed):
-        RPi.set_fan_speed(speed)
-
-    @staticmethod
-    def exposed_set_fan_state(on):
+    def exposed_set_fan_state(on, speed):
         RPi.set_fan_state(on)
+        RPi.set_fan_speed(speed)
 
     @staticmethod
     def exposed_set_heater_state(on):
