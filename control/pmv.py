@@ -2,7 +2,6 @@ __author__ = 'Alimohammad'
 import math
 import collections
 import time
-from scipy import stats
 import rpyc
 from config import Config
 
