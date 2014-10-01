@@ -33,6 +33,10 @@ class PMV:
             db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
             try:
                 parameters = db_conn.root.get_ppv_parameters(Config.service_config["user_id"])
+                PMV.a = float(parameters["a"])
+                PMV.b = float(parameters["b"])
+                PMV.offset = float(parameters["offset"])
+                Config.logger.info("Parameters updated: [a][%s][b][%s][offset][%s]" % (str(PMV.a), str(PMV.b), str(PMV.offset)))
                 db_conn.close()
             except Exception, e:
                 Config.logger.warning("There was a problem getting parameters from db")
@@ -41,11 +45,6 @@ class PMV:
         except Exception, e:
             Config.logger.warning("There was a problem connecting to db")
             Config.logger.error(e)
-
-        PMV.a = float(parameters["a"])
-        PMV.b = float(parameters["b"])
-        PMV.offset = float(parameters["offset"])
-        Config.logger.info("Parameters updated: [a][%s][b][%s][offset][%s]" % (str(PMV.a), str(PMV.b), str(PMV.offset)))
 
     @staticmethod
     def calculate_pmv(clo, ta, tr, met, vel, rh):
