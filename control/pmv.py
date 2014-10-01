@@ -2,12 +2,18 @@ __author__ = 'Alimohammad'
 import math
 import collections
 import time
+from scipy import stats
+import rpyc
+from config import Config
 
 class PMV:
     def __init__(self):
         pass
 
     pmv_list = collections.OrderedDict()
+    a = 1
+    b = 0
+    offset = 0
 
     @staticmethod
     def add_pmv(pmv_value):
@@ -16,6 +22,31 @@ class PMV:
     @staticmethod
     def empty_list():
         PMV.pmv_list.clear()
+
+    @staticmethod
+    def calculate_ppv(clo, ta, tr, met, vel, rh):
+        return PMV.a * PMV.calculate_pmv(clo, ta, tr, met, vel, rh) + PMV.b
+
+    @staticmethod
+    def update_parameters():
+        parameters = None
+        try:
+            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
+            try:
+                parameters = db_conn.root.get_ppv_parameters(Config.service_config["user_id"])
+                db_conn.close()
+            except Exception, e:
+                Config.logger.warning("There was a problem getting parameters from db")
+                Config.logger.error(e)
+                db_conn.close()
+        except Exception, e:
+            Config.logger.warning("There was a problem connecting to db")
+            Config.logger.error(e)
+
+        PMV.a = float(parameters["a"])
+        PMV.b = float(parameters["b"])
+        PMV.offset = float(parameters["offset"])
+        Config.logger.info("Parameters updated: [a][%s][b][%s][offset][%s]" % (str(PMV.a), str(PMV.b), str(PMV.offset)))
 
     @staticmethod
     def calculate_pmv(clo, ta, tr, met, vel, rh):

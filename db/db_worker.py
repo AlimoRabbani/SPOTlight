@@ -17,7 +17,7 @@ class DBService(rpyc.Service):
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         spotlight_collection = collection.Collection(client.spotlight, "Temperatures")
         document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "temperature": float(temperature)}
-        Config.logger.info("insert temperature %s" % str(temperature))
+        Config.logger.info("insert temperature:%s" % str(temperature))
         spotlight_collection.insert(document)
         client.close()
 
@@ -26,8 +26,8 @@ class DBService(rpyc.Service):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         spotlight_collection = collection.Collection(client.spotlight, "Motions")
-        document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "motion": float(motion)}
-        Config.logger.info("insert motion %s" % str(motion))
+        document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "std": float(motion)}
+        Config.logger.info("insert motion_std:%s" % str(motion))
         spotlight_collection.insert(document)
         client.close()
 
@@ -36,8 +36,8 @@ class DBService(rpyc.Service):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         spotlight_collection = collection.Collection(client.spotlight, "Occupancies")
-        document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "motion": int(occupancy)}
-        Config.logger.info("insert occupancy %s" % str(occupancy))
+        document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "occupancy": int(occupancy)}
+        Config.logger.info("insert occupancy:%s" % str(occupancy))
         spotlight_collection.insert(document)
         client.close()
 
@@ -48,10 +48,32 @@ class DBService(rpyc.Service):
         spotlight_collection = collection.Collection(client.spotlight, "States")
         document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "heat": heat_state,
                     "cool": cool_state, "speed": fan_speed}
-        Config.logger.info("insert state [Heat][%s][Fan][%s][Speed][%s]" %
+        Config.logger.info("insert state heat:%s cool:%s speed:%s" %
                            (str(heat_state), str(cool_state), str(fan_speed)))
         spotlight_collection.insert(document)
         client.close()
+
+    @staticmethod
+    def exposed_insert_ppv(pmv, ppv, user_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        ppv_collection = collection.Collection(client.spotlight, "PPVs")
+        document = {"timestamp": datetime.datetime.utcnow(), "user_id": user_id, "pmv": pmv, "ppv": ppv}
+        Config.logger.info("insert pmv:%s ppv:%s" % (str(pmv), str(ppv)))
+        ppv_collection.insert(document)
+        client.close()
+
+    @staticmethod
+    def exposed_get_ppv_parameters(user_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        device_collection = collection.Collection(client.spotlight, "Devices")
+        device = device_collection.find_one({"user_id": user_id})
+        Config.logger.info("fetched %s" % str(device))
+        client.close()
+        return device
+
+
 
 if __name__ == "__main__":
     Config.initialize()

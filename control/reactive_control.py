@@ -10,11 +10,9 @@ class ReactiveControl:
         pass
 
     occupancy_bucket_value = 0
-    a = 1
-    b = 0
     current_air_speed = 0.0
-    current_heater_state = False
-    current_fan_state = False
+    current_heat_state = False
+    current_cool_state = False
     current_temperature = 25
 
     @staticmethod
@@ -60,6 +58,7 @@ class ReactiveControl:
 
     @staticmethod
     def update_occupancy_bucket(standard_deviation):
+        PMV.update_parameters()
         #update occupancy bucket based on threshold
         if standard_deviation > Config.control_config["occupancy_motion_threshold"]:
             if ReactiveControl.occupancy_bucket_value < Config.control_config["occupancy_bucket_size"]:
@@ -82,20 +81,19 @@ class ReactiveControl:
 
     @staticmethod
     def make_decision():
-        ppv = ReactiveControl.b +\
-              ReactiveControl.a * PMV.calculate_pmv(0.5, float(ReactiveControl.current_temperature),
-                                                    float(ReactiveControl.current_temperature), 1.2, 0.0, 100.0)
-        if ReactiveControl.occupancy_bucket_value == 0 and ReactiveControl.current_heater_state:
+        ppv = PMV.calculate_ppv(0.5, float(ReactiveControl.current_temperature),
+                                float(ReactiveControl.current_temperature), 1.2, 0.0, 100.0)
+        if ReactiveControl.occupancy_bucket_value == 0 and ReactiveControl.current_heat_state:
             if ReactiveControl.set_heat_state(False):
                 ReactiveControl.insert_state_to_db()
-        elif ReactiveControl.occupancy_bucket_value == 0 and ReactiveControl.current_fan_state:
+        elif ReactiveControl.occupancy_bucket_value == 0 and ReactiveControl.current_cool_state:
             if ReactiveControl.set_cool_state(False, 0):
                 ReactiveControl.insert_state_to_db()
-        elif (ReactiveControl.occupancy_bucket_value > 0 and ReactiveControl.current_fan_state
+        elif (ReactiveControl.occupancy_bucket_value > 0 and ReactiveControl.current_cool_state
               and ppv < Config.control_config["pmv_threshold"]):
             if ReactiveControl.set_cool_state(False, 0):
                 ReactiveControl.insert_state_to_db()
-        elif (ReactiveControl.occupancy_bucket_value > 0 and ReactiveControl.current_heater_state
+        elif (ReactiveControl.occupancy_bucket_value > 0 and ReactiveControl.current_heat_state
               and ppv > 0 - Config.control_config["pmv_threshold"]):
             if ReactiveControl.set_heat_state(False):
                 ReactiveControl.insert_state_to_db()
@@ -106,26 +104,10 @@ class ReactiveControl:
             if ReactiveControl.set_cool_state(True, speed):
                 ReactiveControl.insert_state_to_db()
         elif (ReactiveControl.occupancy_bucket_value == Config.control_config["occupancy_bucket_size"]
-              and ReactiveControl.current_heater_state is False and ppv < 0 - Config.control_config["pmv_threshold"]):
+              and ReactiveControl.current_heat_state is False and ppv < 0 - Config.control_config["pmv_threshold"]):
             if ReactiveControl.set_heat_state(True):
                 ReactiveControl.insert_state_to_db()
-
-
-    @staticmethod
-    def insert_state_to_db():
-        try:
-            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
-            try:
-                db_conn.root.insert_state(ReactiveControl.current_heater_state, ReactiveControl.current_fan_state,
-                                          ReactiveControl.current_air_speed, Config.service_config["user_id"])
-                db_conn.close()
-            except Exception, e:
-                Config.logger.warning("There was a problem inserting state to db")
-                Config.logger.error(e)
-                db_conn.close()
-        except Exception, e:
-            Config.logger.warning("There was a problem connecting to db")
-            Config.logger.error(e)
+        ReactiveControl.insert_ppv_to_db()
 
     @staticmethod
     def set_heat_state(on):
@@ -135,7 +117,7 @@ class ReactiveControl:
             try:
                 device_conn.root.set_heater_state(on)
                 device_conn.close()
-                ReactiveControl.current_heater_state = on
+                ReactiveControl.current_heat_state = on
                 if on:
                     ReactiveControl.current_air_speed = Config.control_config["max_fan_speed"]
                 else:
@@ -165,7 +147,7 @@ class ReactiveControl:
             try:
                 device_conn.root.set_fan_state(on, relative_speed)
                 device_conn.close()
-                ReactiveControl.current_fan_state = on
+                ReactiveControl.current_cool_state = on
                 ReactiveControl.current_air_speed = speed
                 Config.logger.info("[Set Fan State][%s]" % str(on))
                 Config.logger.info("[Set Fan Speed][Absolute][%s][Relative][%s]" % (str(speed), str(relative_speed)))
@@ -183,3 +165,45 @@ class ReactiveControl:
                                    Config.service_config["device_service_port"]))
             Config.logger.error(e)
             return False
+
+    @staticmethod
+    def insert_state_to_db():
+        try:
+            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
+            try:
+                db_conn.root.insert_state(ReactiveControl.current_heat_state, ReactiveControl.current_cool_state,
+                                          ReactiveControl.current_air_speed, Config.service_config["user_id"])
+                db_conn.close()
+            except Exception, e:
+                Config.logger.warning("There was a problem inserting state to db")
+                Config.logger.error(e)
+                db_conn.close()
+        except Exception, e:
+            Config.logger.warning("There was a problem connecting to db")
+            Config.logger.error(e)
+
+    @staticmethod
+    def insert_ppv_to_db():
+        ppv = PMV.calculate_ppv(0.5, float(ReactiveControl.current_temperature),
+                                float(ReactiveControl.current_temperature), 1.2, 0.0, 100.0)
+        pmv = PMV.calculate_pmv(0.5, float(ReactiveControl.current_temperature),
+                                float(ReactiveControl.current_temperature), 1.2, 0.0, 100.0)
+        if ReactiveControl.current_cool_state:
+            ppv = PMV.calculate_ppv(0.5, float(ReactiveControl.current_temperature),
+                                    float(ReactiveControl.current_temperature), 1.2,
+                                    ReactiveControl.current_air_speed, 100.0)
+            pmv = PMV.calculate_pmv(0.5, float(ReactiveControl.current_temperature),
+                                    float(ReactiveControl.current_temperature), 1.2,
+                                    ReactiveControl.current_air_speed, 100.0)
+        try:
+            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
+            try:
+                db_conn.root.insert_ppv(pmv, ppv, Config.service_config["user_id"])
+                db_conn.close()
+            except Exception, e:
+                Config.logger.warning("There was a problem inserting pmv, ppv to db")
+                Config.logger.error(e)
+                db_conn.close()
+        except Exception, e:
+            Config.logger.warning("There was a problem connecting to db")
+            Config.logger.error(e)

@@ -85,6 +85,7 @@ class RPi:
     def set_fan_state(on):
         GPIO.output(Config.rpi_config["RPi_FAN_PIN"], on)
         Config.logger.info("[Fan_State][%s]" % str(on))
+
     @staticmethod
     def set_heater_state(on):
         RPi.set_fan_state(on)
