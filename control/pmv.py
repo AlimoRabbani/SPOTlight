@@ -24,7 +24,7 @@ class PMV:
 
     @staticmethod
     def calculate_ppv(clo, ta, tr, met, vel, rh):
-        return PMV.a * PMV.calculate_pmv(clo, ta, tr, met, vel, rh) + PMV.b
+        return PMV.a * PMV.calculate_pmv(clo, ta, tr, met, vel, rh) + PMV.b - PMV.offset
 
     @staticmethod
     def update_parameters():
