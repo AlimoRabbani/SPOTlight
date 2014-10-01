@@ -89,7 +89,6 @@ class RPi:
     @staticmethod
     def set_heater_state(on):
         RPi.set_fan_state(on)
-        RPi.set_heater_state(on)
         if on:
             RPi.set_fan_speed(1.0)
         else:

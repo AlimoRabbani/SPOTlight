@@ -140,7 +140,7 @@ class ReactiveControl:
 
     @staticmethod
     def set_cool_state(on, speed):
-        relative_speed = speed / Config.control_config["max_fan_speed"]
+        relative_speed = float(speed) / Config.control_config["max_fan_speed"]
         try:
             device_conn = rpyc.connect(Config.service_config["device_service_address"],
                                        Config.service_config["device_service_port"])
@@ -148,9 +148,10 @@ class ReactiveControl:
                 device_conn.root.set_fan_state(on, relative_speed)
                 device_conn.close()
                 ReactiveControl.current_cool_state = on
-                ReactiveControl.current_air_speed = speed
+                ReactiveControl.current_air_speed = float(speed)
                 Config.logger.info("[Set Fan State][%s]" % str(on))
-                Config.logger.info("[Set Fan Speed][Absolute][%s][Relative][%s]" % (str(speed), str(relative_speed)))
+                Config.logger.info("[Set Fan Speed][Absolute][%s][Relative][%s]" %
+                                   (str(float(speed)), str(relative_speed)))
                 return True
             except Exception, e:
                 Config.logger.warning("Error sending fan state to %s:%s" %
