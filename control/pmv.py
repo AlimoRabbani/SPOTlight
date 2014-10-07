@@ -23,9 +23,9 @@ class PMV:
             db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
             try:
                 parameters = db_conn.root.get_ppv_parameters(Config.service_config["device_id"])
-                PMV.a = float(parameters["a"])
-                PMV.b = float(parameters["b"])
-                PMV.offset = float(parameters["offset"])
+                PMV.a = float(parameters["device_parameter_a"])
+                PMV.b = float(parameters["device_parameter_b"])
+                PMV.offset = float(parameters["device_parameter_offset"])
                 Config.logger.info("Parameters updated: [a][%s][b][%s][offset][%s]" % (str(PMV.a), str(PMV.b), str(PMV.offset)))
                 db_conn.close()
             except Exception, e:
