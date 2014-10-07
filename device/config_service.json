@@ -4,5 +4,6 @@
 "control_service_port":12346,
 "db_service_address":"129.97.171.55",
 "db_service_port":12347,
-"user_id":"alimohammad"
+"user_id":"random_user1",
+"device_id":"random_device1"
 }

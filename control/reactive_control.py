@@ -21,7 +21,7 @@ class ReactiveControl:
         try:
             db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
             try:
-                db_conn.root.insert_temperature(temperature, Config.service_config["user_id"])
+                db_conn.root.insert_temperature(temperature, Config.service_config["device_id"])
                 db_conn.close()
             except Exception, e:
                 Config.logger.warning("There was a problem inserting to db")
@@ -30,10 +30,7 @@ class ReactiveControl:
         except Exception, e:
             Config.logger.warning("There was a problem connecting to db")
             Config.logger.error(e)
-
         ReactiveControl.current_temperature = temperature
-        PMV.add_pmv(PMV.calculate_pmv(0.5, float(temperature), float(temperature), 1.2,
-                                      float(ReactiveControl.current_air_speed), 100.0))
 
     @staticmethod
     def motion_updated(standard_deviation):
@@ -41,7 +38,7 @@ class ReactiveControl:
         try:
             db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
             try:
-                db_conn.root.insert_motion(standard_deviation,Config.service_config["user_id"])
+                db_conn.root.insert_motion(standard_deviation,Config.service_config["device_id"])
                 db_conn.close()
             except Exception, e:
                 Config.logger.warning("There was a problem inserting to db")
@@ -50,15 +47,14 @@ class ReactiveControl:
         except Exception, e:
             Config.logger.warning("There was a problem connecting to db")
             Config.logger.error(e)
+        PMV.update_parameters()
         ReactiveControl.update_occupancy_bucket(standard_deviation)
         #calculate new a, b if there is a vote
         #insert (PMV, vote) to database and read during initiation
-        PMV.empty_list()
         ReactiveControl.make_decision()
 
     @staticmethod
     def update_occupancy_bucket(standard_deviation):
-        PMV.update_parameters()
         #update occupancy bucket based on threshold
         if standard_deviation > Config.control_config["occupancy_motion_threshold"]:
             if ReactiveControl.occupancy_bucket_value < Config.control_config["occupancy_bucket_size"]:
@@ -69,7 +65,7 @@ class ReactiveControl:
         try:
             db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
             try:
-                db_conn.root.insert_occupancy(ReactiveControl.occupancy_bucket_value, Config.service_config["user_id"])
+                db_conn.root.insert_occupancy(ReactiveControl.occupancy_bucket_value, Config.service_config["device_id"])
                 db_conn.close()
             except Exception, e:
                 Config.logger.warning("There was a problem inserting to db")
@@ -173,7 +169,7 @@ class ReactiveControl:
             db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
             try:
                 db_conn.root.insert_state(ReactiveControl.current_heat_state, ReactiveControl.current_cool_state,
-                                          ReactiveControl.current_air_speed, Config.service_config["user_id"])
+                                          ReactiveControl.current_air_speed, Config.service_config["device_id"])
                 db_conn.close()
             except Exception, e:
                 Config.logger.warning("There was a problem inserting state to db")
@@ -199,7 +195,7 @@ class ReactiveControl:
         try:
             db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
             try:
-                db_conn.root.insert_ppv(pmv, ppv, Config.service_config["user_id"])
+                db_conn.root.insert_ppv(pmv, ppv, Config.service_config["device_id"])
                 db_conn.close()
             except Exception, e:
                 Config.logger.warning("There was a problem inserting pmv, ppv to db")

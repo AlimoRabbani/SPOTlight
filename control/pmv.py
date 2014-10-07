@@ -9,18 +9,9 @@ class PMV:
     def __init__(self):
         pass
 
-    pmv_list = collections.OrderedDict()
     a = 1
     b = 0
     offset = 0
-
-    @staticmethod
-    def add_pmv(pmv_value):
-        PMV.pmv_list[time.time()] = pmv_value
-
-    @staticmethod
-    def empty_list():
-        PMV.pmv_list.clear()
 
     @staticmethod
     def calculate_ppv(clo, ta, tr, met, vel, rh):
@@ -28,11 +19,10 @@ class PMV:
 
     @staticmethod
     def update_parameters():
-        parameters = None
         try:
             db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
             try:
-                parameters = db_conn.root.get_ppv_parameters(Config.service_config["user_id"])
+                parameters = db_conn.root.get_ppv_parameters(Config.service_config["device_id"])
                 PMV.a = float(parameters["a"])
                 PMV.b = float(parameters["b"])
                 PMV.offset = float(parameters["offset"])
