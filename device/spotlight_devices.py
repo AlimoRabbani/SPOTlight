@@ -97,9 +97,7 @@ class RPi:
         Config.logger.info("[Heater_State][%s]" % str(on))
 
     @staticmethod
-    def reverse_byte_order(data):
-        dst = hex(data)[2:].replace('L', '')
-        byte_count = len(dst[::2])
+    def reverse_byte_order(data, byte_count=2):
         val = 0
         for i, n in enumerate(range(byte_count)):
             d = data & 0xFF
