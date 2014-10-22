@@ -73,7 +73,15 @@ class DBService(rpyc.Service):
         client.close()
         return device
 
-
+    @staticmethod
+    def exposed_get_user(user_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        user_collection = collection.Collection(client.spotlight, "Users")
+        user = user_collection.find_one({"email": user_id})
+        Config.logger.info("fetched %s" % str(user))
+        client.close()
+        return user
 
 if __name__ == "__main__":
     Config.initialize()
