@@ -184,6 +184,23 @@ class DBService(rpyc.Service):
         client.close()
         return motion_list
 
+    @staticmethod
+    def exposed_insert_vote(device_id, vote):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        ppv_collection = collection.Collection(client.spotlight, "PPVs")
+        pmv_ppv_dict = ppv_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1)
+        pmv = pmv_ppv_dict["pmv"]
+
+        votes_collection = collection.Collection(client.spotlight, "Votes")
+        result = votes_collection.insert({"device_id": device_id, "vote": vote, "pmv": pmv})
+        Config.logger.info("inserted (vote:%f, pmv:%f) for device '%s'" % (vote, pmv, str(device_id)))
+        client.close()
+        if result:
+            return True
+        else:
+            return False
+
 if __name__ == "__main__":
     Config.initialize()
     Config.logger.info("SPOTlight db manager started...")
