@@ -190,7 +190,7 @@ class DBService(rpyc.Service):
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         ppv_collection = collection.Collection(client.spotlight, "PPVs")
         pmv_ppv_dict = ppv_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1)
-        pmv = pmv_ppv_dict["pmv"]
+        pmv = pmv_ppv_dict[0]["pmv"]
 
         votes_collection = collection.Collection(client.spotlight, "Votes")
         result = votes_collection.insert({"device_id": device_id, "vote": vote, "pmv": pmv})
