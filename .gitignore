@@ -8,4 +8,4 @@ SPOTlight_key.private
 
 *.log
 
-web/spotlightWebVenv/*
+spotlightVenv/*
