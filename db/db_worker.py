@@ -102,7 +102,7 @@ class DBService(rpyc.Service):
         devices = device_collection.find({"user_id": user_id})
         Config.logger.info("fetched %s" % str(devices))
         client.close()
-        return devices
+        return list(devices)
 
     @staticmethod
     def exposed_get_training(device_id):
