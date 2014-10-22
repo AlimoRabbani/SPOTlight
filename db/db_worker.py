@@ -1,6 +1,6 @@
 import datetime
 import rpyc
-import json
+from scipy import stats
 
 from rpyc.utils.server import ThreadedServer
 from pymongo import MongoClient
@@ -188,18 +188,60 @@ class DBService(rpyc.Service):
     def exposed_insert_vote(device_id, vote):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+
+        training_collection = collection.Collection(client.spotlight, "Training")
+        training = training_collection.find_one({"device_id": device_id})
+        if not training:
+            return False
+
         ppv_collection = collection.Collection(client.spotlight, "PPVs")
         pmv_ppv_dict = ppv_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1)
         pmv = pmv_ppv_dict[0]["pmv"]
 
         votes_collection = collection.Collection(client.spotlight, "Votes")
         result = votes_collection.insert({"device_id": device_id, "vote": vote, "pmv": pmv})
+
+        votes_archive_collection = collection.Collection(client.spotlight, "Votes_Archive")
+        votes_archive_collection.insert({"device_id": device_id, "training_start": training["start_time"],
+                                         "vote": vote, "pmv": pmv})
+
         Config.logger.info("inserted (vote:%f, pmv:%f) for device '%s'" % (vote, pmv, str(device_id)))
         client.close()
         if result:
             return True
         else:
             return False
+
+    @staticmethod
+    def exposed_end_training(device_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+
+        training_collection = collection.Collection(client.spotlight, "Training")
+        training_collection.remove({"device_id": device_id})
+
+        votes_collection = collection.Collection(client.spotlight, "Votes")
+        votes = list(votes_collection.find({"device_id": device_id}))
+
+        pmv_list = list()
+        vote_list = list()
+        for vote in votes:
+            pmv_list.append(vote["pmv"])
+            vote_list.append(vote["vote"])
+        line_regress = stats.linregress(pmv_list, vote_list)
+        slope = line_regress[0]
+        intercept = line_regress[1]
+
+        votes_collection = collection.Collection(client.spotlight, "Votes")
+        votes_collection.remove({"device_id": device_id})
+
+        device_collection = collection.Collection(client.spotlight, "Devices")
+        device_collection.update({"device_id": device_id}, {"$set": {"device_parameter_a": slope}})
+        device_collection.update({"device_id": device_id}, {"$set": {"device_parameter_b": intercept}})
+
+        Config.logger.info("Ended training for device '%s'" % str(device_id))
+        client.close()
+        return
 
 if __name__ == "__main__":
     Config.initialize()
