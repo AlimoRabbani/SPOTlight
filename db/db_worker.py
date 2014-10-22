@@ -167,7 +167,7 @@ class DBService(rpyc.Service):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         occupancy_collection = collection.Collection(client.spotlight, "Occupancies")
-        occupancy_list = list(occupancy_collection.find({"device_id": self.device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
+        occupancy_list = list(occupancy_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
         Config.logger.info("fetched occupancies for device:'%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
@@ -178,7 +178,7 @@ class DBService(rpyc.Service):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         motion_collection = collection.Collection(client.spotlight, "Motions")
-        motion_list = list(motion_collection.find({"device_id": self.device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
+        motion_list = list(motion_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
         Config.logger.info("fetched motions for device '%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
