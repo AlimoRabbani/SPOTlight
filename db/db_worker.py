@@ -80,7 +80,7 @@ class DBService(rpyc.Service):
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         user_collection = collection.Collection(client.spotlight, "Users")
         user = user_collection.find_one({"email": user_id})
-        Config.logger.info("fetched %s" % str(user))
+        Config.logger.info("fetched user info for '%s'" % str(user_id))
         client.close()
         return user
 
@@ -99,8 +99,8 @@ class DBService(rpyc.Service):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         device_collection = collection.Collection(client.spotlight, "Devices")
-        devices = device_collection.find({"user_id": user_id})
-        Config.logger.info("fetched %s" % str(devices))
+        devices = list(device_collection.find({"user_id": user_id}))
+        Config.logger.info("fetched %d devices for user '%s'" % (len(devices), str(user_id)))
         client.close()
         return list(devices)
 
@@ -110,7 +110,7 @@ class DBService(rpyc.Service):
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         training_collection = collection.Collection(client.spotlight, "Training")
         training = training_collection.find_one({"device_id": device_id})
-        Config.logger.info("fetched %s" % str(training))
+        Config.logger.info("fetched training %s for device '%s'" % (str(training), str(device_id)))
         client.close()
         return training
 
@@ -120,7 +120,7 @@ class DBService(rpyc.Service):
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         training_collection = collection.Collection(client.spotlight, "Training")
         result = training_collection.insert({"device_id": device_id, "start_time": datetime.datetime.utcnow()})
-        Config.logger.info("inserted training for:%s" % str(device_id))
+        Config.logger.info("inserted training for device '%s'" % str(device_id))
         client.close()
         if result:
             return True
@@ -133,7 +133,7 @@ class DBService(rpyc.Service):
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         device_collection = collection.Collection(client.spotlight, "Devices")
         result = device_collection.update({"device_id": device_id}, {"$set": {"device_parameter_offset": new_offset}})
-        Config.logger.info("updated offset for:%s" % str(device_id))
+        Config.logger.info("updated offset for device '%s'" % str(device_id))
         client.close()
         if result:
             return True
@@ -145,44 +145,44 @@ class DBService(rpyc.Service):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         ppv_collection = collection.Collection(client.spotlight, "PPVs")
-        pmv_ppv_dict = ppv_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}})
-        Config.logger.info("fetched (pmv,ppv) for device:'%s' from %s" %
+        pmv_ppv_list = list(ppv_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}}))
+        Config.logger.info("fetched (pmv,ppv) for device '%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
-        return pmv_ppv_dict
+        return pmv_ppv_list
 
     @staticmethod
     def exposed_get_temperature_list(device_id, start_date):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         temperature_collection = collection.Collection(client.spotlight, "Temperatures")
-        temperature_dict = temperature_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1)
-        Config.logger.info("fetched temperatures for device:'%s' from %s" %
+        temperature_list = list(temperature_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
+        Config.logger.info("fetched temperatures for device '%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
-        return temperature_dict
+        return temperature_list
 
     @staticmethod
     def exposed_get_occupancy_list(device_id, start_date):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         occupancy_collection = collection.Collection(client.spotlight, "Occupancies")
-        occupancy_dict = occupancy_collection.find({"device_id": self.device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1)
+        occupancy_list = list(occupancy_collection.find({"device_id": self.device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
         Config.logger.info("fetched occupancies for device:'%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
-        return occupancy_dict
+        return occupancy_list
 
     @staticmethod
     def exposed_get_motion_list(device_id, start_date):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         motion_collection = collection.Collection(client.spotlight, "Motions")
-        motion_dict = motion_collection.find({"device_id": self.device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1)
-        Config.logger.info("fetched motions for device:'%s' from %s" %
+        motion_list = list(motion_collection.find({"device_id": self.device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
+        Config.logger.info("fetched motions for device '%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
-        return motion_dict
+        return motion_list
 
 if __name__ == "__main__":
     Config.initialize()
