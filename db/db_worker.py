@@ -249,9 +249,12 @@ class DBService(rpyc.Service):
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         temperature_collection = collection.Collection(client.spotlight, "Temperatures")
         temperature_list = list(temperature_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
-        Config.logger.info("fetched latest temperaure update for device '%s'" % str(device_id))
+        Config.logger.info("fetched latest temperature update for device '%s'" % str(device_id))
         client.close()
-        return temperature_list[0]
+        if len(temperature_list) == 1:
+            return temperature_list[0]
+        else:
+            return None
 
 if __name__ == "__main__":
     Config.initialize()
