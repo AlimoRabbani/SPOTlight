@@ -105,6 +105,16 @@ class DBService(rpyc.Service):
         return list(devices)
 
     @staticmethod
+    def exposed_get_all_devices():
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        device_collection = collection.Collection(client.spotlight, "Devices")
+        devices = list(device_collection.find())
+        Config.logger.info("fetched %d all devices" % len(devices))
+        client.close()
+        return list(devices)
+
+    @staticmethod
     def exposed_get_training(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
