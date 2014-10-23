@@ -244,14 +244,14 @@ class DBService(rpyc.Service):
         return
 
     @staticmethod
-    def exposed_get_last_update_time(device_id):
+    def exposed_get_last_temperature_update(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         temperature_collection = collection.Collection(client.spotlight, "Temperatures")
         temperature_list = list(temperature_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
-        Config.logger.info("fetched latest update time for device '%s'" % str(device_id))
+        Config.logger.info("fetched latest temperaure update for device '%s'" % str(device_id))
         client.close()
-        return temperature_list[0]["timestamp"]
+        return temperature_list[0]
 
 if __name__ == "__main__":
     Config.initialize()
