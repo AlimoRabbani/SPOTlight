@@ -223,25 +223,35 @@ class DBService(rpyc.Service):
         votes_collection = collection.Collection(client.spotlight, "Votes")
         votes = list(votes_collection.find({"device_id": device_id}))
 
-        pmv_list = list()
-        vote_list = list()
-        for vote in votes:
-            pmv_list.append(vote["pmv"])
-            vote_list.append(vote["vote"])
-        line_regress = stats.linregress(pmv_list, vote_list)
-        slope = line_regress[0]
-        intercept = line_regress[1]
+        if len(votes) > 5:
+            pmv_list = list()
+            vote_list = list()
+            for vote in votes:
+                pmv_list.append(vote["pmv"])
+                vote_list.append(vote["vote"])
+            line_regress = stats.linregress(pmv_list, vote_list)
+            slope = line_regress[0]
+            intercept = line_regress[1]
+            device_collection = collection.Collection(client.spotlight, "Devices")
+            device_collection.update({"device_id": device_id},
+                                     {"$set": {"device_parameter_a": slope, "device_parameter_b": intercept}})
 
         votes_collection = collection.Collection(client.spotlight, "Votes")
         votes_collection.remove({"device_id": device_id})
 
-        device_collection = collection.Collection(client.spotlight, "Devices")
-        device_collection.update({"device_id": device_id}, {"$set": {"device_parameter_a": slope}})
-        device_collection.update({"device_id": device_id}, {"$set": {"device_parameter_b": intercept}})
-
         Config.logger.info("Ended training for device '%s'" % str(device_id))
         client.close()
         return
+
+    @staticmethod
+    def exposed_get_last_update_time(device_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        temperature_collection = collection.Collection(client.spotlight, "Temperatures")
+        temperature_list = list(temperature_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
+        Config.logger.info("fetched latest update time for device '%s'" % str(device_id))
+        client.close()
+        return temperature_list[0]["timestamp"]
 
 if __name__ == "__main__":
     Config.initialize()
