@@ -179,8 +179,8 @@ class DBService(rpyc.Service):
         previous_ppv = pmv_ppv_list[0]["ppv"]
         prev_in_augmented = True
         for i in range(1, len(pmv_ppv_list)):
-            if (math.fabs(pmv_ppv_list[i]["pmv"] - previous_pmv) > math.log10(len(pmv_ppv_list))*0.03) or\
-                    (math.fabs(pmv_ppv_list[i]["ppv"] - previous_ppv) > math.log10(len(pmv_ppv_list))*0.03):
+            if (math.fabs(pmv_ppv_list[i]["pmv"] - previous_pmv) > 0.02 + (math.log10(len(pmv_ppv_list)) - 2)*0.01) or\
+                    (math.fabs(pmv_ppv_list[i]["ppv"] - previous_ppv) > 0.02 + (math.log10(len(pmv_ppv_list)) - 2)*0.01):
                 if not prev_in_augmented:
                     pmv_ppv_augmented_list.append(pmv_ppv_list[i-1])
                 pmv_ppv_augmented_list.append(pmv_ppv_list[i])
