@@ -1,5 +1,6 @@
 import datetime
 import rpyc
+import math
 from scipy import stats
 
 from rpyc.utils.server import ThreadedServer
@@ -172,6 +173,17 @@ class DBService(rpyc.Service):
         Config.logger.info("fetched (pmv,ppv) for device '%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
+        pmv_ppv_augmented_list = list()
+        pmv_ppv_augmented_list.append(pmv_ppv_list[0])
+        previous_pmv = pmv_ppv_list[0]["pmv"]
+        previous_ppv = pmv_ppv_list[0]["ppv"]
+        for pmv_ppv_item in pmv_ppv_list[1:-1]:
+            if (math.fabs(pmv_ppv_item["pmv"] - previous_pmv) > 0.1) or\
+                    (math.fabs(pmv_ppv_item["ppv"] - previous_ppv) > 0.1):
+                pmv_ppv_augmented_list.append(pmv_ppv_item)
+            previous_pmv = pmv_ppv_item["pmv"]
+            previous_ppv = pmv_ppv_item["ppv"]
+        pmv_ppv_augmented_list.append(pmv_ppv_list[-1])
         return pmv_ppv_list
 
     @staticmethod
@@ -183,6 +195,14 @@ class DBService(rpyc.Service):
         Config.logger.info("fetched temperatures for device '%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
+        temperature_augmented_list = list()
+        temperature_augmented_list.append(temperature_list[0])
+        previous_temperature = temperature_list[0]["temperature"]
+        for temperature_item in temperature_list[1:-1]:
+            if math.fabs(temperature_item["temperature"] - previous_temperature) > 0.1:
+                temperature_augmented_list.append(temperature_item)
+            previous_temperature = temperature_item["temperature"]
+        temperature_augmented_list.append(temperature_list[-1])
         return temperature_list
 
     @staticmethod
@@ -194,6 +214,14 @@ class DBService(rpyc.Service):
         Config.logger.info("fetched occupancies for device:'%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
+        occupancy_augmented_list = list()
+        occupancy_augmented_list.append(occupancy_list[0])
+        previous_occupancy = occupancy_list[0]["occupancy"]
+        for occupancy_item in occupancy_list[1:-1]:
+            if math.fabs(occupancy_item["occupancy"] - previous_occupancy) > 0.5:
+                occupancy_augmented_list.append(occupancy_item)
+            previous_occupancy = occupancy_item["occupancy"]
+        occupancy_augmented_list.append(occupancy_list[-1])
         return occupancy_list
 
     @staticmethod
@@ -205,6 +233,14 @@ class DBService(rpyc.Service):
         Config.logger.info("fetched motions for device '%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
+        motion_augmented_list = list()
+        motion_augmented_list.append(motion_list[0])
+        previous_motion = motion_list[0]["std"]
+        for motion_item in motion_list[1:-1]:
+            if math.fabs(motion_item["std"] - previous_motion) > 15:
+                motion_augmented_list.append(motion_item)
+            previous_motion = motion_item["std"]
+        motion_augmented_list.append(motion_list[-1])
         return motion_list
 
     @staticmethod
