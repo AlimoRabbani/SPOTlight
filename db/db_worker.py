@@ -178,8 +178,8 @@ class DBService(rpyc.Service):
         previous_pmv = pmv_ppv_list[0]["pmv"]
         previous_ppv = pmv_ppv_list[0]["ppv"]
         for pmv_ppv_item in pmv_ppv_list[1:-1]:
-            if (math.fabs(pmv_ppv_item["pmv"] - previous_pmv) > 0.1) or\
-                    (math.fabs(pmv_ppv_item["ppv"] - previous_ppv) > 0.1):
+            if (math.fabs(pmv_ppv_item["pmv"] - previous_pmv) > math.log10(len(pmv_ppv_list))*0.2) or\
+                    (math.fabs(pmv_ppv_item["ppv"] - previous_ppv) > math.log10(len(pmv_ppv_list))*0.2):
                 pmv_ppv_augmented_list.append(pmv_ppv_item)
             previous_pmv = pmv_ppv_item["pmv"]
             previous_ppv = pmv_ppv_item["ppv"]
@@ -199,7 +199,7 @@ class DBService(rpyc.Service):
         temperature_augmented_list.append(temperature_list[0])
         previous_temperature = temperature_list[0]["temperature"]
         for temperature_item in temperature_list[1:-1]:
-            if math.fabs(temperature_item["temperature"] - previous_temperature) > 0.1:
+            if math.fabs(temperature_item["temperature"] - previous_temperature) > math.log10(len(temperature_list))*0.2:
                 temperature_augmented_list.append(temperature_item)
             previous_temperature = temperature_item["temperature"]
         temperature_augmented_list.append(temperature_list[-1])
@@ -237,7 +237,7 @@ class DBService(rpyc.Service):
         motion_augmented_list.append(motion_list[0])
         previous_motion = motion_list[0]["std"]
         for motion_item in motion_list[1:-1]:
-            if math.fabs(motion_item["std"] - previous_motion) > 15:
+            if math.fabs(motion_item["std"] - previous_motion) > math.log10(len(motion_list))*10:
                 motion_augmented_list.append(motion_item)
             previous_motion = motion_item["std"]
         motion_augmented_list.append(motion_list[-1])
