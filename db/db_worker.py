@@ -256,7 +256,7 @@ class DBService(rpyc.Service):
         previous_motion = motion_list[0]["std"]
         prev_in_augmented = True
         for i in range(1, len(motion_list)):
-            if math.fabs(motion_list[i]["std"] - previous_motion) > 5 + (math.log10(len(motion_list)) - 1)*30:
+            if math.fabs(motion_list[i]["std"] - previous_motion) > 20 + (math.log10(len(motion_list)) - 1)*20:
                 if not prev_in_augmented:
                     motion_augmented_list.append(motion_list[i-1])
                 motion_augmented_list.append(motion_list[i])
