@@ -1,0 +1,24 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Device Training</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row" style="padding-left:20px; padding-right:25px;">
+                    Your device is controlled based on the following equation: PPV = a*PMV + b.
+                    In this equation, PMV is <a href="http://en.wikipedia.org/wiki/Thermal_comfort">Predicted Mean Vote</a> and is calculated based on
+                    temperature, humidity, air velocity, metabolic rate, and attire. Since we are not
+                    measuring some of these parameters, we assume fixed values for them and adjust the function
+                    using <strong>"a"</strong> and <strong>"b"</strong> coefficients and calculate PPV. Currently, <strong>a = {{ device.device_parameter_a }}</strong> and
+                    <strong>b = {{ device.device_parameter_b }}</strong> for your device.
+                    If you think that your device is not calibrated, hit the train button below and you will
+                    have 24 hours to vote and train it.
+                </div>
+                <div class="row" style="text-align:center; margin-top:15px;">
+                    <a class="btn btn-danger" href="{{ url_for('user_views.start_training', device_id=device.device_id) }}">Start Training</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

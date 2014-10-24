@@ -1,47 +1,29 @@
 {% extends "base.html" %}
 {% block title %}My Devices{% endblock %}
 {% block content %}
+<script type="text/javascript">
+$(document).ready(function(){
+    $(".admin-thumbnail-danger, .admin-thumbnail-warning").tooltip();
+});
+</script>
 <div class="container">
-    <div class="row">
-        <div class="col-lg-6 col-md-8 col-sm-10 col-xs-12 col-lg-offset-3 col-md-offset-2 col-sm-offset-1">
             <div class="row" style="margin-top:20px;">
                     <ol class="breadcrumb">
-                        <li><a href="{{ url_for('common_views.index') }}">Home</a></li>
+                        <li><a href="{{ url_for('admin_views.index') }}">Admin Home</a></li>
                         <li class="active">Devices</li>
                     </ol>
             </div>
             {% for device in devices %}
-            <div class="row">
-                <a href="{{ url_for('user_views.device_view', device_id=device.device_id) }}" class="thumbnail container-fluid">
-                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" style="padding-left:5px; padding-top:5px; padding-bottom:5px; padding-right:10px; text-align:center">
-                        <img src="{{ url_for('static', filename='images/spotlight-device.jpg') }}" style="height: 100%; width: 100%;">
-                    </div>
-                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-                        {% if device.is_overheating %}
-                            <span class="label label-warning">Overheating!</span>
-                        {% endif %}
-                        {% if not device.is_alive %}
-                            <span class="label label-danger">Device Lost!</span>
-                        {% endif %}
-                        <div class="caption" style="margin-top:-10px; padding:0;">
-                            <ul class="list-unstyled">
-                                <li><h3>Location: {{ device.device_location }}</h3></li>
-                                <ul class="list-unstyled">
-                                    <li><small><strong>Most Recent IP Address:</strong> {{ device.device_ip }}</small></li>
-                                    <li><small><strong>Mac Address:</strong> {{ device.device_mac }}</small></li>
-                                    <li><small><strong>Box No:</strong> {{ device.box_number }}</small></li>
-                                    <li><small><strong>Parameter "a":</strong> {{ device.device_parameter_a }}</small></li>
-                                    <li><small><strong>Parameter "b":</strong> {{ device.device_parameter_b }}</small></li>
-                                    <li><small><strong>Parameter "offset":</strong> {{ device.device_parameter_offset }}</small></li>
-                                </ul>
-                            </ul>
-                            <!--<p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>-->
-                        </div>
-                    </div>
-                </a>
+            <div class="col-lg-2 col-md-2 col-sm-3 col-xs-3">
+                    <a href="{{ url_for('admin_views.device_view', device_id=device.device_id) }}"
+                       class="thumbnail{% if not device.is_alive %} admin-thumbnail-danger{% elif device.is_overheating %} admin-thumbnail-warning{% endif %}"
+                       style="text-decoration: none !important; color: black;" data-toggle="tooltip" data-placement="top"
+                       title="{% if not device.is_alive %}Device Lost!{% elif device.is_overheating %}Overheating!{% endif %}">
+                            <div class="text-center">
+                                <h4>{{ device.device_location }}</h4>
+                            </div>
+                    </a>
             </div>
             {% endfor %}
-        </div>
-    </div>
 </div>
 {% endblock %}

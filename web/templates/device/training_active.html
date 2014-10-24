@@ -1,0 +1,64 @@
+<script>
+$(document).ready(function() {
+    $('#voteGroup').delegate('button', 'click', function() {
+        $(this).addClass('active').siblings().removeClass("active");
+        $.get( "{{ url_for('user_views.submit_vote', device_id=device.device_id) }}", "value=" + ($(this).index() - 3))
+        .success(function(data) {
+            $("#voteNetworkAlert").hide();
+            $("#voteSuccessAlert").hide();
+            $("#voteSuccessAlert").fadeIn(1000);
+        })
+        .fail(function() {
+            $("#voteSuccessAlert").hide();
+            $("#voteNetworkAlert").hide();
+            $("#voteNetworkAlert").fadeIn(1000);
+        });
+    });
+});
+</script>
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Device Training</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row" style="text-align:center;">
+        			<h3 style="margin-top:0;">How are you feeling?</h3>
+                    <div class="btn-group feeling-btn-group" id="voteGroup">
+                        <button type="button" class="btn btn-lg btn-spotlight btn-very-cold">Very Cold</button>
+                        <button type="button" class="btn btn-lg btn-spotlight btn-cold">Cold</button>
+                        <button type="button" class="btn btn-lg btn-spotlight btn-cool">Cool</button>
+                        <button type="button" class="btn btn-lg btn-spotlight btn-ok">OK</button>
+                        <button type="button" class="btn btn-lg btn-spotlight btn-warm">Warm</button>
+                        <button type="button" class="btn btn-lg btn-spotlight btn-hot">Hot</button>
+                        <button type="button" class="btn btn-lg btn-spotlight btn-very-hot">Very Hot</button>
+                    </div>
+                </div>
+                <div class="row" style="padding-left:20px; padding-right:25px; margin-top:20px;">
+                    During the training phase, we use your feedback to adjust <strong>"a"</strong> and <strong>"b"</strong>
+                    coefficients to personalize PMV calculations for you. At this time, we need you to select how you
+                    feel whenever you have time. Even if you feel comfortable, we need you to vote periodically. The
+                    votes we collect from you, the better we can estimate your comfort.
+                </div>
+                <div class="row" style="text-align:center; margin-top:15px;">
+                    <a class="btn btn-danger" href="{{ url_for('user_views.end_training', device_id=device.device_id) }}">End Training</a>
+                </div>
+                <div class="row">
+                    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 col-lg-offset-1 col-md-offset-1 col-sm-offset-1 col-xs-offset-1" style="text-align:center;">
+                        <div class="alert alert-warning" id="voteNetworkAlert" style="display:none; margin-bottom:0; margin-top:15px;">
+                            <strong>Warning!</strong> There was a problem sending the vote.
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 col-lg-offset-1 col-md-offset-1 col-sm-offset-1 col-xs-offset-1" style="text-align:center;">
+                        <div class="alert alert-success" id="voteSuccessAlert" style="display:none; margin-bottom:0; margin-top:15px;">
+                            <strong>Success!</strong> Your vote was successfully sent.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

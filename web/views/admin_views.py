@@ -1,108 +1,50 @@
 __author__ = 'Alimohammad'
 from flask import request, render_template, abort, url_for, redirect
 from flask_login import login_required, current_user
-import datetime
-import json
-
+from data_model import Device
+from functools import wraps
 from flask import Blueprint
 
-user_views = Blueprint('user_views', __name__, template_folder='templates')
+import datetime
+
+admin_views = Blueprint('admin_views', __name__, template_folder='templates')
 
 
-@user_views.route('/devices/')
+def admin_required(main_function):
+    @wraps(main_function)
+    def new_function(*args, **kwargs):
+        if current_user.role != "admin":
+            abort(403)
+        else:
+            return main_function(*args, **kwargs)
+    return new_function
+
+@admin_views.route('/admin/')
 @login_required
+@admin_required
+def index():
+    return render_template("admin/admin_index.html")
+
+
+@admin_views.route('/admin/devices/')
+@login_required
+@admin_required
 def devices_view():
-    devices = current_user.find_devices()
-    return render_template("devices.html", devices=devices)
+    devices = Device.find_all_devices()
+    return render_template("admin/admin_devices.html", devices=devices)
 
 
-@user_views.route('/device/<device_id>/')
+@admin_views.route('/admin/device/<device_id>/')
 @login_required
+@admin_required
 def device_view(device_id):
     device = current_user.get_device(device_id)
     if device is not None:
         pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(days=-1))
         occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() +
                                                                            datetime.timedelta(days=-1))
-        return render_template("device/device.html", device=device, pmv_ppv_list=pmv_ppv_list,
-                               occupancy_temperature_list=occupancy_temperature_list)
+        owner = device.get_owner()
+        return render_template("admin/admin_device.html", device=device, pmv_ppv_list=pmv_ppv_list,
+                               occupancy_temperature_list=occupancy_temperature_list, device_owner=owner)
     else:
         abort(403)
-
-@user_views.route('/device/<device_id>/get_pmv_ppv_list/')
-@login_required
-def device_get_pmv_ppv_list(device_id):
-    device = current_user.get_device(device_id)
-    pmv_ppv_list = None
-    if device is not None:
-        if request.args.get("time_interval") == "Month":
-            pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(weeks=-4))
-        elif request.args.get("time_interval") == "Week":
-            pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(weeks=-1))
-        elif request.args.get("time_interval") == "Day":
-            pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(days=-1))
-        elif request.args.get("time_interval") == "Hour":
-            pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(hours=-1))
-        elif request.args.get("time_interval") == "Now":
-            pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.fromtimestamp(float(request.args.get("start_time"))))
-        return json.dumps(pmv_ppv_list)
-    else:
-        abort(403)
-
-@user_views.route('/device/<device_id>/get_occupancy_temperature_list/')
-@login_required
-def device_get_occupancy_temperature_list(device_id):
-    device = current_user.get_device(device_id)
-    occupancy_temperature_list = None
-    if device is not None:
-        if request.args.get("time_interval") == "Month":
-            occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() + datetime.timedelta(weeks=-4))
-        elif request.args.get("time_interval") == "Week":
-            occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() + datetime.timedelta(weeks=-1))
-        elif request.args.get("time_interval") == "Day":
-            occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() + datetime.timedelta(days=-1))
-        elif request.args.get("time_interval") == "Hour":
-            occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() + datetime.timedelta(hours=-1))
-        elif request.args.get("time_interval") == "Now":
-            occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.fromtimestamp(float(request.args.get("start_time"))))
-        return json.dumps(occupancy_temperature_list)
-    else:
-        abort(403)
-
-
-@user_views.route('/device/<device_id>/start_training/')
-@login_required
-def start_training(device_id):
-    device = current_user.get_device(device_id)
-    if device is not None:
-        device.start_training()
-        return redirect(url_for("user_views.device_view", device_id=device.device_id))
-    abort(403)
-
-@user_views.route('/device/<device_id>/submit_vote/')
-@login_required
-def submit_vote(device_id):
-    device = current_user.get_device(device_id)
-    if device is not None:
-        if device.submit_vote(int(request.args.get("value"))):
-            return "ok"
-    abort(403)
-
-@user_views.route('/device/<device_id>/end_training/')
-@login_required
-def end_training(device_id):
-    device = current_user.get_device(device_id)
-    if device is not None:
-        device.end_training()
-        return redirect(url_for("user_views.device_view", device_id=device.device_id))
-    abort(403)
-
-
-@user_views.route('/device/<device_id>/submit_offset/')
-@login_required
-def submit_offset(device_id):
-    device = current_user.get_device(device_id)
-    if device is not None:
-        if device.update_offset(int(request.args.get("value"))):
-            return "ok"
-    abort(403)

@@ -1,0 +1,109 @@
+html, body {
+    height: 100%;
+}
+
+/* Wrapper for page content to push down footer */
+#wrap {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    /* Negative indent footer by it's height */
+    margin: 0 auto -60px;
+    padding-top: 55px;
+}
+
+/* Set the fixed height of the footer here */
+#push, #footer {
+    height: 60px;
+}
+
+#footer {
+    background-color: #f5f5f5;
+}
+
+/* Lastly, apply responsive CSS fixes as necessary */
+@media (max-width: 767px) {
+    #footer {
+        margin-left: -20px;
+        margin-right: -20px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+.container .credit {
+    margin: 20px 0;
+}
+
+.login-content-wrapper {
+	text-align: center;
+}
+
+.feeling-btn-group {
+    margin-top:15px;
+	background-color: none;
+	background-image: -webkit-linear-gradient(left, #5A5FFF 0%, #FF4C19 100%); 
+	background-image: linear-gradient(to right, #5A5FFF 0%, #FF4C19 100%); 
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5A5FFF', endColorstr='#FF4C19', GradientType=1);
+	filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+	border-radius: 8px;
+}
+
+.btn-spotlight {
+	text-shadow: 0 1px 0 #000;
+	/*width: 100px;*/
+	color: white;
+	font-size:15px;
+	/*background-repeat: repeat-x;*/
+	background-color: transparent;
+	background-image: none;
+	/*border-color: #dbdbdb;*/
+	border-color: #ccc;
+}
+.btn-spotlight:hover,
+.btn-spotlight:focus {
+	color: white;
+	background-color: rgba(30, 114, 30, 1);
+	/*background-color: #e0e0e0;*/
+	/*background-position: 0 -15px;*/
+}
+.btn-spotlight:active,
+.btn-spotlight.active {
+	color: white;
+	background-color: rgba(30, 114, 30, 1);
+	/*background-color: #e0e0e0;*/
+	/*border-color: #dbdbdb;*/
+}
+
+.feeling-form {
+	margin-top: 30px;
+}
+
+#offsetSlider .slider-track {
+	background: blue;
+}
+
+#offsetSlider .slider-handle {
+    opacity: 1.0;
+	background: white;
+	border-style: solid;
+	border-width: 1px;
+	border-color:black;
+}
+
+#offsetSlider .slider-selection {
+	background: red;
+}
+
+.slider.slider-horizontal {
+    width: 100%;
+}
+
+
+.admin-thumbnail-danger {
+    background-color: #d9534f;
+}
+
+.admin-thumbnail-warning {
+    background-color: #f0ad4e;
+}

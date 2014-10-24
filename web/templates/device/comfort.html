@@ -1,0 +1,89 @@
+<script>
+$(document).ready(function() {
+    var now_start_time = new Date();
+    now_start_time = (now_start_time.getTime() + now_start_time.getTimezoneOffset()*60*1000)/1000;
+    var pmvData = {{ pmv_ppv_list[0] }};
+    var ppvData = {{ pmv_ppv_list[1] }};
+
+    var realtime_updater;
+    var pmvSeries = {data: pmvData, color: 2, label: 'PMV', lines: {show: true }};
+    var ppvSeries = {data: ppvData, color: 3, label: 'PPV', lines: {show: true }};
+    var xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
+    var plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
+    $('#ppvTimeSelectionGroup').delegate('button', 'click', function() {
+        $(this).addClass('active').siblings().removeClass("active");
+        var timePeriod = $(this).text();
+        if (timePeriod == "Now!") {
+            xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
+            now_start_time = new Date();
+            now_start_time = (now_start_time.getTime() + now_start_time.getTimezoneOffset()*60*1000)/1000;
+            plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
+            update_graph();
+            return;
+        }
+        else {
+            clearTimeout(realtime_updater);
+        }
+        $.get( "{{ url_for('user_views.device_get_pmv_ppv_list', device_id=device.device_id) }}", "time_interval=" + $(this).text())
+        .success(function(data) {
+            if (timePeriod == "Month") {
+                xaxisOptions = {mode: "time", timeformat: "%b %e", timezone: "browser", monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]};
+            }
+            else if (timePeriod == "Week") {
+                xaxisOptions = {mode: "time", timeformat: "%a", timezone: "browser", dayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Friday", "Sat"]};
+            }
+            else if (timePeriod == "Day") {
+                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
+            }
+            else if (timePeriod == "Hour") {
+                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
+            }
+            pmvData = eval(data)[0];
+            ppvData = eval(data)[1];
+            pmvSeries = {data: pmvData, color: 2, label: 'pmv', lines: {show: true }};
+            ppvSeries = {data: ppvData, color: 3, label: 'ppv', lines: {show: true }};
+            plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
+        })
+        .fail(function() {
+            alert("network fail");
+        });
+    });
+    function update_graph() {
+        $.get( "{{ url_for('user_views.device_get_pmv_ppv_list', device_id=device.device_id) }}", {time_interval: "Now", start_time: now_start_time})
+        .success(function(data) {
+            pmvData = eval(data)[0];
+            ppvData = eval(data)[1];
+            pmvSeries = {data: pmvData, color: 2, label: 'pmv', lines: {show: true }, points: {show: true }};
+            ppvSeries = {data: ppvData, color: 3, label: 'ppv', lines: {show: true }, points: {show: true }};
+            plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
+	    	realtime_updater = setTimeout(update_graph, 10000);
+        })
+        .fail(function() {
+            alert("network fail");
+        });
+	}
+});
+</script>
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">My Comfort</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row" style="padding-left:10px;">
+                    <div class="col-lg-11 col-md-10 col-sm-10 col-xs-9" id="ppvChart" style="height: 200px;"></div>
+                    <div class="col-lg-1 col-md-2 col-sm-2 col-xs-3">
+                        <div class="btn-group-vertical pull-right" id="ppvTimeSelectionGroup" style="margin-top: 10px;">
+                            <button type="button" class="btn btn-default" >Month</button>
+                            <button type="button" class="btn btn-default">Week</button>
+                            <button type="button" class="btn btn-default active">Day</button>
+                            <button type="button" class="btn btn-default">Hour</button>
+                            <button type="button" class="btn btn-default">Now!</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

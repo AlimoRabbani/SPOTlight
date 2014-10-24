@@ -1,0 +1,6 @@
+{"secret_key": "",
+"db_service_address":"129.97.171.55",
+"db_service_port":12347,
+"keepalive_interval":20,
+"overheating_threshold":30
+}
