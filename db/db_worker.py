@@ -220,9 +220,9 @@ class DBService(rpyc.Service):
         prev_in_augmented = True
         for i in range(1, len(occupancy_list)):
             if math.fabs(occupancy_list[i]["occupancy"] - previous_occupancy) > 0.5:
-                occupancy_augmented_list.append(occupancy_list[i])
                 if not prev_in_augmented:
                     occupancy_augmented_list.append(occupancy_list[i-1])
+                occupancy_augmented_list.append(occupancy_list[i])
                 prev_in_augmented = True
             else:
                 prev_in_augmented = False
@@ -245,9 +245,9 @@ class DBService(rpyc.Service):
         prev_in_augmented = True
         for i in range(1, len(motion_list)):
             if math.fabs(motion_list[i]["std"] - previous_motion) > 15:
-                motion_augmented_list.append(motion_list[i])
                 if not prev_in_augmented:
                     motion_augmented_list.append(motion_list[i-1])
+                motion_augmented_list.append(motion_list[i])
                 prev_in_augmented = True
             else:
                 prev_in_augmented = False
