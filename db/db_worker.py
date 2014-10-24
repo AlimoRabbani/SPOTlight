@@ -95,16 +95,6 @@ class DBService(rpyc.Service):
         return device
 
     @staticmethod
-    def exposed_get_device_owner(device_id):
-        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
-        user_collection = collection.Collection(client.spotlight, "Users")
-        owner = user_collection.find_one({"device_id": device_id})
-        Config.logger.info("fetched owner for device '%s'" % str(device_id))
-        client.close()
-        return owner
-
-    @staticmethod
     def exposed_get_devices(user_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
