@@ -14,11 +14,14 @@ class DBService(rpyc.Service):
     def exposed_insert_temperature(self, temperature, device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
-        print self._conn._config['endpoints'][1][0]
         spotlight_collection = collection.Collection(client.spotlight, "Temperatures")
         document = {"timestamp": datetime.datetime.utcnow(), "device_id": device_id, "temperature": float(temperature)}
         Config.logger.info("insert temperature:%s" % str(temperature))
         spotlight_collection.insert(document)
+
+        device_collection = collection.Collection(client.spotlight, "Devices")
+        device_collection.update({"device_id": device_id},
+                                 {"$set": {"device_ip": self._conn._config['endpoints'][1][0]}})
         client.close()
 
     @staticmethod
