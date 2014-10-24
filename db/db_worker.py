@@ -178,13 +178,13 @@ class DBService(rpyc.Service):
         previous_pmv = pmv_ppv_list[0]["pmv"]
         previous_ppv = pmv_ppv_list[0]["ppv"]
         for pmv_ppv_item in pmv_ppv_list[1:-1]:
-            if (math.fabs(pmv_ppv_item["pmv"] - previous_pmv) > math.log10(len(pmv_ppv_list))*0.2) or\
-                    (math.fabs(pmv_ppv_item["ppv"] - previous_ppv) > math.log10(len(pmv_ppv_list))*0.2):
+            if (math.fabs(pmv_ppv_item["pmv"] - previous_pmv) > math.log10(len(pmv_ppv_list))*0.1) or\
+                    (math.fabs(pmv_ppv_item["ppv"] - previous_ppv) > math.log10(len(pmv_ppv_list))*0.1):
                 pmv_ppv_augmented_list.append(pmv_ppv_item)
             previous_pmv = pmv_ppv_item["pmv"]
             previous_ppv = pmv_ppv_item["ppv"]
         pmv_ppv_augmented_list.append(pmv_ppv_list[-1])
-        return pmv_ppv_list
+        return pmv_ppv_augmented_list
 
     @staticmethod
     def exposed_get_temperature_list(device_id, start_date):
@@ -199,11 +199,11 @@ class DBService(rpyc.Service):
         temperature_augmented_list.append(temperature_list[0])
         previous_temperature = temperature_list[0]["temperature"]
         for temperature_item in temperature_list[1:-1]:
-            if math.fabs(temperature_item["temperature"] - previous_temperature) > math.log10(len(temperature_list))*0.2:
+            if math.fabs(temperature_item["temperature"] - previous_temperature) > math.log10(len(temperature_list))*0.1:
                 temperature_augmented_list.append(temperature_item)
             previous_temperature = temperature_item["temperature"]
         temperature_augmented_list.append(temperature_list[-1])
-        return temperature_list
+        return temperature_augmented_list
 
     @staticmethod
     def exposed_get_occupancy_list(device_id, start_date):
@@ -222,7 +222,7 @@ class DBService(rpyc.Service):
                 occupancy_augmented_list.append(occupancy_item)
             previous_occupancy = occupancy_item["occupancy"]
         occupancy_augmented_list.append(occupancy_list[-1])
-        return occupancy_list
+        return occupancy_augmented_list
 
     @staticmethod
     def exposed_get_motion_list(device_id, start_date):
@@ -241,7 +241,7 @@ class DBService(rpyc.Service):
                 motion_augmented_list.append(motion_item)
             previous_motion = motion_item["std"]
         motion_augmented_list.append(motion_list[-1])
-        return motion_list
+        return motion_augmented_list
 
     @staticmethod
     def exposed_insert_vote(device_id, vote):
