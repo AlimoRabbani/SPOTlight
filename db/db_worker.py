@@ -75,11 +75,21 @@ class DBService(rpyc.Service):
 
     #Exposed methods for the web application
     @staticmethod
-    def exposed_get_user(user_id):
+    def exposed_get_user_by_email(email):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         user_collection = collection.Collection(client.spotlight, "Users")
-        user = user_collection.find_one({"email": user_id})
+        user = user_collection.find_one({"email": email})
+        Config.logger.info("fetched user info for '%s'" % str(email))
+        client.close()
+        return user
+
+    @staticmethod
+    def exposed_get_user_by_user_id(user_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        user_collection = collection.Collection(client.spotlight, "Users")
+        user = user_collection.find_one({"user_id": user_id})
         Config.logger.info("fetched user info for '%s'" % str(user_id))
         client.close()
         return user
