@@ -206,7 +206,7 @@ class DBService(rpyc.Service):
         previous_temperature = temperature_list[0]["temperature"]
         prev_in_augmented = True
         for i in range(1, len(temperature_list)):
-            if math.fabs(temperature_list[i]["temperature"] - previous_temperature) > math.log10(len(temperature_list))*0.05:
+            if math.fabs(temperature_list[i]["temperature"] - previous_temperature) > 0.05:
                 if not prev_in_augmented:
                     temperature_augmented_list.append(temperature_list[i-1])
                 temperature_augmented_list.append(temperature_list[i])
