@@ -199,7 +199,7 @@ class DBService(rpyc.Service):
         temperature_augmented_list.append(temperature_list[0])
         previous_temperature = temperature_list[0]["temperature"]
         for temperature_item in temperature_list[1:-1]:
-            if math.fabs(temperature_item["temperature"] - previous_temperature) > 0.1:
+            if math.fabs(temperature_item["temperature"] - previous_temperature) > math.log10(len(temperature_list))*0.1:
                 temperature_augmented_list.append(temperature_item)
             previous_temperature = temperature_item["temperature"]
         temperature_augmented_list.append(temperature_list[-1])
@@ -217,10 +217,16 @@ class DBService(rpyc.Service):
         occupancy_augmented_list = list()
         occupancy_augmented_list.append(occupancy_list[0])
         previous_occupancy = occupancy_list[0]["occupancy"]
-        for occupancy_item in occupancy_list[1:-1]:
-            if math.fabs(occupancy_item["occupancy"] - previous_occupancy) > 0.5:
-                occupancy_augmented_list.append(occupancy_item)
-            previous_occupancy = occupancy_item["occupancy"]
+        prev_in_augmented = True
+        for i in range(1, len(occupancy_list)):
+            if math.fabs(occupancy_list[i]["occupancy"] - previous_occupancy) > 0.5:
+                occupancy_augmented_list.append(occupancy_list[i])
+                if not prev_in_augmented:
+                    occupancy_augmented_list.append(occupancy_list[i-1])
+                prev_in_augmented = True
+            else:
+                prev_in_augmented = False
+            previous_occupancy = occupancy_list[i]["occupancy"]
         occupancy_augmented_list.append(occupancy_list[-1])
         return occupancy_augmented_list
 
@@ -236,10 +242,16 @@ class DBService(rpyc.Service):
         motion_augmented_list = list()
         motion_augmented_list.append(motion_list[0])
         previous_motion = motion_list[0]["std"]
-        for motion_item in motion_list[1:-1]:
-            if math.fabs(motion_item["std"] - previous_motion) > 15:
-                motion_augmented_list.append(motion_item)
-            previous_motion = motion_item["std"]
+        prev_in_augmented = True
+        for i in range(1, len(motion_list)):
+            if math.fabs(motion_list[i]["std"] - previous_motion) > 15:
+                motion_augmented_list.append(motion_list[i])
+                if not prev_in_augmented:
+                    motion_augmented_list.append(motion_list[i-1])
+                prev_in_augmented = True
+            else:
+                prev_in_augmented = False
+            previous_motion = motion_list[i]["std"]
         motion_augmented_list.append(motion_list[-1])
         return motion_augmented_list
 
