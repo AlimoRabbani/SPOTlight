@@ -63,7 +63,7 @@ def motion_update_handler(motion):
 
 if __name__ == "__main__":
     Config.initialize()
-    Config.logger.info("SPOTlight device manager started...")
+    Config.logger.info("SPOTlight device worker started...")
     Updater.start()
     server = ThreadedServer(DeviceService, hostname=Config.service_config["device_service_address"],
                             port=Config.service_config["device_service_port"], logger=Config.service_logger,
@@ -71,5 +71,5 @@ if __name__ == "__main__":
     RPi.start(temperature_update_handler, motion_update_handler)
     server.start()
     #device manager will block on this line to listen for incoming RPC requests
-    Config.logger.info("SPOTlight device manager shutting down...")
+    Config.logger.info("SPOTlight device worker shutting down...")
     GPIO.cleanup()

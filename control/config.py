@@ -26,7 +26,7 @@ class Config:
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler('control.log')
+        file_handler = logging.FileHandler(Config.resource_path + 'control.log')
         file_handler.setLevel(logging.INFO)
 
         console_handler = logging.StreamHandler()
@@ -42,7 +42,7 @@ class Config:
         service_logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler('control_services.log')
+        file_handler = logging.FileHandler(Config.resource_path + 'control_services.log')
         file_handler.setLevel(logging.INFO)
 
         file_handler.setFormatter(formatter)
