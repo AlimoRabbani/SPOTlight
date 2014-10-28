@@ -5,6 +5,7 @@ import hashlib
 import datetime
 import rpyc
 import pickle
+from dateutil import tz
 
 class User:
     def __init__(self, user_dict):
@@ -105,6 +106,8 @@ class Device:
         self.box_number = device_dict["box_number"]
         self.is_alive = True
         self.is_overheating = False
+        self.latest_update_time = None
+        self.latest_temperature = None
         self.update_warnings()
 
     @staticmethod
@@ -242,6 +245,7 @@ class Device:
         return result
 
     def get_pmv_ppv_list(self, start_date):
+        pmv_ppv_list = list()
         try:
             db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
                                    current_app.config["custom_config"]["db_service_port"],
@@ -258,16 +262,19 @@ class Device:
             current_app.logger.error(e)
         pmv_list = list()
         ppv_list = list()
-        skipper_value = (len(pmv_ppv_list) / 100) + 1
-        counter = 0
+        # skipper_value = (len(pmv_ppv_list) / 100) + 1
+        # counter = 0
         for pmv_ppv_item in pmv_ppv_list:
-            if (counter % skipper_value) == 0:
-                pmv_list.append([(pmv_ppv_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, pmv_ppv_item["pmv"]])
-                ppv_list.append([(pmv_ppv_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, pmv_ppv_item["ppv"]])
-            counter += 1
+            # if (counter % skipper_value) == 0:
+            pmv_list.append([(pmv_ppv_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, pmv_ppv_item["pmv"]])
+            ppv_list.append([(pmv_ppv_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, pmv_ppv_item["ppv"]])
+            # counter += 1
         return [pmv_list, ppv_list]
 
     def get_occupancy_temperature_list(self, start_date):
+        temperature_list = list()
+        motion_list = list()
+        occupancy_list = list()
         try:
             db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
                                    current_app.config["custom_config"]["db_service_port"],
@@ -285,28 +292,28 @@ class Device:
             current_app.logger.warning("There was a problem connecting to db")
             current_app.logger.error(e)
         temperature_modified_list = list()
-        skipper_value = (len(temperature_list) / 100) + 1
-        counter = 0
+        # skipper_value = (len(temperature_list) / 100) + 1
+        # counter = 0
         for temperature_item in temperature_list:
-            if (counter % skipper_value) == 0:
-                temperature_modified_list.append([(temperature_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, temperature_item["temperature"]])
-            counter += 1
+            # if (counter % skipper_value) == 0:
+            temperature_modified_list.append([(temperature_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, temperature_item["temperature"]])
+            # counter += 1
 
         motion_modified_list = list()
-        skipper_value = (len(motion_list) / 100) + 1
-        counter = 0
+        # skipper_value = (len(motion_list) / 100) + 1
+        # counter = 0
         for motion_item in motion_list:
-            if (counter % skipper_value) == 0:
-                motion_modified_list.append([(motion_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, motion_item["std"]])
-            counter += 1
+            # if (counter % skipper_value) == 0:
+            motion_modified_list.append([(motion_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, motion_item["std"]])
+            # counter += 1
 
         occupancy_modified_list = list()
-        skipper_value = (len(occupancy_list) / 100) + 1
-        counter = 0
+        # skipper_value = (len(occupancy_list) / 100) + 1
+        # counter = 0
         for occupancy_item in occupancy_list:
-            if (counter % skipper_value) == 0:
-                occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, int(occupancy_item["occupancy"]/2) ])
-            counter += 1
+            # if (counter % skipper_value) == 0:
+            occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, int(occupancy_item["occupancy"]/2) ])
+            # counter += 1
         return [motion_modified_list, occupancy_modified_list, temperature_modified_list]
 
     def update_warnings(self):
@@ -322,6 +329,11 @@ class Device:
                     return
                 last_temperature = last_update["temperature"]
                 last_time = last_update["timestamp"]
+                from_zone = tz.tzutc()
+                to_zone = tz.tzlocal()
+                utc = last_time.replace(tzinfo=from_zone)
+                self.latest_update_time = utc.astimezone(to_zone)
+                self.latest_temperature = last_temperature
                 if (datetime.datetime.utcnow() - last_time).total_seconds() < current_app.config["custom_config"]["keepalive_interval"]:
                     self.is_alive = True
                 if last_temperature < current_app.config["custom_config"]["overheating_threshold"]:

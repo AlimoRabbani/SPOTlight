@@ -2,7 +2,7 @@ __author__ = 'Alimohammad'
 
 import json
 import logging
-
+import os
 
 class Config:
     rpi_config = dict()
@@ -10,15 +10,16 @@ class Config:
     update_config = dict()
     logger = logging.getLogger("SPOTlight RPi")
     service_logger = logging.getLogger("SPOTlight Device Services")
+    resource_path = os.path.dirname(os.path.realpath(__file__)) + "/"
 
     def __init__(self):
         pass
 
     @staticmethod
     def initialize():
-        Config.rpi_config = json.loads(open("config_rpi.json").read())
-        Config.service_config = json.loads(open("config_service.json").read())
-        Config.update_config = json.loads(open("config_update.json").read())
+        Config.rpi_config = json.loads(open(Config.resource_path + "config_rpi.json").read())
+        Config.service_config = json.loads(open(Config.resource_path + "config_service.json").read())
+        Config.update_config = json.loads(open(Config.resource_path + "config_update.json").read())
 
         logger = logging.getLogger("SPOTlight RPi")
         logger.setLevel(logging.DEBUG)

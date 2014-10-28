@@ -6,42 +6,73 @@
             </div>
             <div class="panel-body">
                 <div class="row" style="padding-left:20px; padding-right:25px;">
-                    <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="col-lg-4 col-md-4 col-sm-5 col-xs-12">
                         <div class="well">
                             <div class="row">
-                                <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3"><strong>Owner:</strong></div>
-                                <div class="col-lg-9 col-md-8 col-sm-9 col-xs-9">{{ device_owner.name }}</div>
+                                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3"><strong>Owner:</strong></div>
+                                <div class="col-lg- col-md-8 col-sm-9 col-xs-9">{{ device_owner.name }}</div>
                             </div>
                             <div class="row">
-                                <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3"><strong>User ID:</strong></div>
-                                <div class="col-lg-9 col-md-8 col-sm-9 col-xs-9">{{ device_owner.user_id }}</div>
+                                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3"><strong>User ID:</strong></div>
+                                <div class="col-lg-8 col-md-8 col-sm-9 col-xs-9">{{ device_owner.user_id }}</div>
                             </div>
                             <div class="row">
-                                <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3"><strong>Email:</strong></div>
-                                <div class="col-lg-9 col-md-8 col-sm-9 col-xs-9">{{ device_owner.email }}</div>
+                                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3"><strong>Email:</strong></div>
+                                <div class="col-lg-8 col-md-8 col-sm-9 col-xs-9">{{ device_owner.email }}</div>
                             </div>
                             <div class="row">
-                                <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3"><strong>Phone:</strong></div>
-                                <div class="col-lg-9 col-md-8 col-sm-9 col-xs-9">{{ device_owner.phone }}</div>
+                                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3"><strong>Phone:</strong></div>
+                                <div class="col-lg-8 col-md-8 col-sm-9 col-xs-9">{{ device_owner.phone }}</div>
                             </div>
                             <div class="row">
-                                <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3"><strong>Role:</strong></div>
-                                <div class="col-lg-9 col-md-8 col-sm-9 col-xs-9">{{ device_owner.role }}</div>
+                                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3"><strong>Role:</strong></div>
+                                <div class="col-lg-8 col-md-8 col-sm-9 col-xs-9">{{ device_owner.role }}</div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="col-lg-4 col-md-8 col-sm-7 col-xs-12">
                         <div class="well">
-                            If you are wearing more clothes today, if you have a higher level of activity
-                            for a special reason, or if you don't feel comfortable today for some reason, use this slider.
-                            It will offset PPV calculations for you by that amount to keep you comfortable.
+                            <div class="row">
+                                <div class="col-lg-5 col-md-4 col-sm-4 col-xs-3"><strong>Location:</strong></div>
+                                <div class="col-lg-7 col-md-8 col-sm-8 col-xs-9">{{ device.device_location }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-5 col-md-4 col-sm-4 col-xs-3"><strong>Mac Address:</strong></div>
+                                <div class="col-lg-7 col-md-8 col-sm-8 col-xs-9">{{ device.device_mac }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-5 col-md-4 col-sm-4 col-xs-3"><strong>Box No:</strong></div>
+                                <div class="col-lg-7 col-md-8 col-sm-8 col-xs-9">{{ device.box_number }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-5 col-md-4 col-sm-4 col-xs-3"><strong>Param "a":</strong></div>
+                                <div class="col-lg-7 col-md-8 col-sm-8 col-xs-9">{{ device.device_parameter_a }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-5 col-md-4 col-sm-4 col-xs-3"><strong>Param "b":</strong></div>
+                                <div class="col-lg-7 col-md-8 col-sm-8 col-xs-9">{{ device.device_parameter_b }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-5 col-md-4 col-sm-4 col-xs-3"><strong>Offset:</strong></div>
+                                <div class="col-lg-7 col-md-8 col-sm-8 col-xs-9">{{ device.device_parameter_offset }}</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="col-lg-4 col-md-4 col-sm-5 col-xs-12">
                         <div class="well">
-                            If you are wearing more clothes today, if you have a higher level of activity
-                            for a special reason, or if you don't feel comfortable today for some reason, use this slider.
-                            It will offset PPV calculations for you by that amount to keep you comfortable.
+                            <div class="row">
+                                <div class="col-lg-4 col-md-5 col-sm-3 col-xs-3"><strong>IP:</strong></div>
+                                <div class="col-lg-8 col-md-7 col-sm-9 col-xs-9">{{ device.device_ip }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-4 col-md-5 col-sm-5 col-xs-5"><strong>Temperature:</strong></div>
+                                <div class="col-lg-8 col-md-7 col-sm-7 col-xs-7">{{ device.latest_temperature }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-4 col-md-5 col-sm-3 col-xs-3"><strong>Update:</strong></div>
+                                <div class="col-lg-8 col-md-7 col-sm-9 col-xs-9">{% if device.latest_update_time %}{{ device.latest_update_time.strftime("%Y-%b-%d %H:%M:%S %Z") }}{% else %}None{% endif %}</div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
