@@ -1,89 +1,69 @@
 <script>
 $(document).ready(function() {
-    var motionData = {{ occupancy_temperature_list[0] }};
-    var occupancyData = {{ occupancy_temperature_list[1] }};
-    var temperatureData = {{ occupancy_temperature_list[2] }};
+    var occupancy_now_start_time = new Date();
+    occupancy_now_start_time_offset = (occupancy_now_start_time.getTime() + occupancy_now_start_time.getTimezoneOffset()*60*1000)/1000;
 
-    var motionSeries = {data: motionData, color: 2, label: 'Movements', lines: {show: true }, yaxis: 3};
     var occupancySeries = {data: occupancyData, color: 3, label: 'Occupancy', lines: {show: true }, yaxis: 1};
     var temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', yaxis: 2};
 
-    var realtime_updater;
+    var occupancy_realtime_updater;
+
+    var occupancyData = [];
+    var temperatureData = [];
+
 
     var xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-    var yaxesOptions = [{
-        position: "left",
-    }, {
-        min: 20,
-        max: 30,
-        position: "right",
-    }, {
-        min: 0,
-        max: 250,
-        position: "left",
-    }]
-
-    var plot = $.plot("#occupancyChart", [motionSeries, occupancySeries, temperatureSeries], {xaxis: xaxisOptions, yaxes: yaxesOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
+    var yaxesOptions = [{position: "left", min: 0, max: 1.2}, {min: 20, max: 30, position: "right"}]
+    update_occupancy_graph("Hour");
     $('#occupancyTimeSelectionGroup').delegate('button', 'click', function() {
         $(this).addClass('active').siblings().removeClass("active");
         var timePeriod = $(this).text();
         if (timePeriod == "Now!") {
-            xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-            now_start_time = new Date();
-            now_start_time = (now_start_time.getTime() + now_start_time.getTimezoneOffset()*60*1000)/1000;
-            plot = $.plot("#occupancyChart", [motionSeries, occupancySeries, temperatureSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
-            update_graph();
+            occupancy_now_start_time = new Date();
+            occupancy_now_start_time_offset = (occupancy_now_start_time.getTime() + occupancy_now_start_time.getTimezoneOffset()*60*1000)/1000;
+            update_occupancy_graph("Now");
             return;
         }
         else {
-            clearTimeout(realtime_updater);
+            clearTimeout(occupancy_realtime_updater);
+            update_occupancy_graph(timePeriod)
         }
-        $.get( "{{ url_for('user_views.device_get_occupancy_temperature_list', device_id=device.device_id) }}", "time_interval=" + $(this).text())
+    });
+    function update_occupancy_graph(timePeriod) {
+        $.get( "{{ url_for('user_views.device_get_occupancy_temperature_list', device_id=device.device_id) }}", {time_interval: timePeriod, start_time: occupancy_now_start_time_offset})
         .success(function(data) {
+            occupancyData = eval(data)[0];
+            temperatureData = eval(data)[1];
+
+            occupancySeries = {data: occupancyData, color: 3, label: 'Occupancy', lines: {show: true }, yaxis: 1};
+            temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', lines: {show: true}, yaxis: 2};
+
             if (timePeriod == "Month") {
-                xaxisOptions = {mode: "time", timeformat: "%b %e", timezone: "browser", monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]};
+                var now_time = new Date();
+                xaxisOptions = {mode: "time", timeformat: "%b %e", timezone: "browser", monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], min: now_time.getTime() - 30*24*60*60000, max: now_time.getTime()};
             }
             else if (timePeriod == "Week") {
-                xaxisOptions = {mode: "time", timeformat: "%a", timezone: "browser", dayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Friday", "Sat"]};
+                var now_time = new Date();
+                xaxisOptions = {mode: "time", timeformat: "%a %I%p", timezone: "browser", dayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], min: now_time.getTime() - 7*24*60*60000, max: now_time.getTime()};
             }
             else if (timePeriod == "Day") {
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
+                var now_time = new Date();
+                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: now_time.getTime() - 24*60*60000, max: now_time.getTime()};
             }
             else if (timePeriod == "Hour") {
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
+                var now_time = new Date();
+                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: now_time.getTime() - 60*60000, max: now_time.getTime()};
             }
-            motionData = eval(data)[0];
-            occupancyData = eval(data)[1];
-            temperatureData = eval(data)[2];
-            motionSeries = {data: motionData, color: 2, label: 'Movements', lines: {show: true }, yaxis: 3};
-            occupancySeries = {data: occupancyData, color: 3, label: 'Occupancy', lines: {show: true }, yaxis: 1};
-            temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', yaxis: 2};
-            plot = $.plot("#occupancyChart", [motionSeries, occupancySeries, temperatureSeries], {xaxis: xaxisOptions, yaxes: yaxesOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
-        })
-        .fail(function() {
-            alert("network fail");
-        });
-    });
-    function update_graph() {
-        $.get( "{{ url_for('user_views.device_get_occupancy_temperature_list', device_id=device.device_id) }}", {time_interval: "Now", start_time: now_start_time})
-        .success(function(data) {
-            var motionData = {{ occupancy_temperature_list[0] }};
-            var occupancyData = {{ occupancy_temperature_list[1] }};
-            var temperatureData = {{ occupancy_temperature_list[2] }};
+            else if (timePeriod == "Now") {
+                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: occupancy_now_start_time.getTime(), max: occupancy_now_start_time.getTime() + 30*60000};
+                occupancySeries = {data: occupancyData, color: 3, label: 'Occupancy', lines: {show: true}, points: {show: true}, yaxis: 1};
+                temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', lines: {show: true}, points: {show: true},  yaxis: 2};
+            }
 
-            var motionSeries = {data: motionData, color: 2, label: 'Movements', lines: {show: true }, yaxis: 3};
-            var occupancySeries = {data: occupancyData, color: 3, label: 'Occupancy', lines: {show: true }, yaxis: 1};
-            var temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', yaxis: 2};
-
-            motionData = eval(data)[0];
-            occupancyData = eval(data)[1];
-            temperatureData = eval(data)[2];
-
-            motionSeries = {data: motionData, color: 2, label: 'Movements', lines: {show: true }, yaxis: 3};
-            occupancySeries = {data: occupancyData, color: 3, label: 'Occupancy', lines: {show: true }, yaxis: 1};
-            temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', yaxis: 2};
-            plot = $.plot("#occupancyChart", [motionSeries, occupancySeries, temperatureSeries], {xaxis: xaxisOptions, yaxes: yaxesOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
-	    	realtime_updater = setTimeout(update_graph, 10000);
+            plot = $.plot("#occupancyChart", [occupancySeries, temperatureSeries], {xaxis: xaxisOptions, yaxes: yaxesOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
+            if(timePeriod == "Now") {
+	    	    occupancy_realtime_updater = setTimeout(function() {update_occupancy_graph(timePeriod);}, 10000);
+	    	}
         })
         .fail(function() {
             alert("network fail");
@@ -104,8 +84,8 @@ $(document).ready(function() {
                         <div class="btn-group-vertical pull-right" id="occupancyTimeSelectionGroup" style="margin-top: 10px;">
                             <button type="button" class="btn btn-default" >Month</button>
                             <button type="button" class="btn btn-default">Week</button>
-                            <button type="button" class="btn btn-default active">Day</button>
-                            <button type="button" class="btn btn-default">Hour</button>
+                            <button type="button" class="btn btn-default">Day</button>
+                            <button type="button" class="btn btn-default active">Hour</button>
                             <button type="button" class="btn btn-default">Now!</button>
                         </div>
                     </div>

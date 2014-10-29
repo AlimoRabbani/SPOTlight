@@ -27,11 +27,12 @@ def devices_view():
 def device_view(device_id):
     device = current_user.get_device(device_id)
     if device is not None:
-        pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(days=-1))
-        occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() +
-                                                                           datetime.timedelta(days=-1))
-        return render_template("users/device.html", device=device, pmv_ppv_list=pmv_ppv_list,
-                               occupancy_temperature_list=occupancy_temperature_list)
+        # pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(days=-1))
+        # occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() +
+        #                                                                    datetime.timedelta(days=-1))
+        # return render_template("users/device.html", device=device, pmv_ppv_list=pmv_ppv_list,
+        #                        occupancy_temperature_list=occupancy_temperature_list)
+        return render_template("users/device.html", device=device)
     else:
         abort(403)
 

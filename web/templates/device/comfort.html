@@ -1,62 +1,64 @@
 <script>
 $(document).ready(function() {
-    var now_start_time = new Date();
-    now_start_time = (now_start_time.getTime() + now_start_time.getTimezoneOffset()*60*1000)/1000;
-    var pmvData = {{ pmv_ppv_list[0] }};
-    var ppvData = {{ pmv_ppv_list[1] }};
+    var comfort_now_start_time = new Date();
+    comfort_now_start_time_offset = (comfort_now_start_time.getTime() + comfort_now_start_time.getTimezoneOffset()*60*1000)/1000;
 
-    var realtime_updater;
+    var pmvData = []
+    var ppvData = []
+
+    var comfort_realtime_updater;
     var pmvSeries = {data: pmvData, color: 2, label: 'PMV', lines: {show: true }};
     var ppvSeries = {data: ppvData, color: 3, label: 'PPV', lines: {show: true }};
     var xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-    var plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
+    update_comfort_graph("Hour");
     $('#ppvTimeSelectionGroup').delegate('button', 'click', function() {
         $(this).addClass('active').siblings().removeClass("active");
         var timePeriod = $(this).text();
         if (timePeriod == "Now!") {
-            xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-            now_start_time = new Date();
-            now_start_time = (now_start_time.getTime() + now_start_time.getTimezoneOffset()*60*1000)/1000;
-            plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
-            update_graph();
+            comfort_now_start_time = new Date();
+            comfort_now_start_time_offset = (comfort_now_start_time.getTime() + comfort_now_start_time.getTimezoneOffset()*60*1000)/1000;
+            update_comfort_graph("Now");
             return;
         }
         else {
-            clearTimeout(realtime_updater);
+            clearTimeout(comfort_realtime_updater);
+            update_comfort_graph(timePeriod);
         }
-        $.get( "{{ url_for('user_views.device_get_pmv_ppv_list', device_id=device.device_id) }}", "time_interval=" + $(this).text())
+    });
+    function update_comfort_graph(timePeriod) {
+        $.get( "{{ url_for('user_views.device_get_pmv_ppv_list', device_id=device.device_id) }}", {time_interval: timePeriod, start_time: comfort_now_start_time_offset})
         .success(function(data) {
-            if (timePeriod == "Month") {
-                xaxisOptions = {mode: "time", timeformat: "%b %e", timezone: "browser", monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]};
-            }
-            else if (timePeriod == "Week") {
-                xaxisOptions = {mode: "time", timeformat: "%a", timezone: "browser", dayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Friday", "Sat"]};
-            }
-            else if (timePeriod == "Day") {
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-            }
-            else if (timePeriod == "Hour") {
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-            }
             pmvData = eval(data)[0];
             ppvData = eval(data)[1];
+
             pmvSeries = {data: pmvData, color: 2, label: 'pmv', lines: {show: true }};
             ppvSeries = {data: ppvData, color: 3, label: 'ppv', lines: {show: true }};
+
+            if (timePeriod == "Month") {
+                var now_time = new Date();
+                xaxisOptions = {mode: "time", timeformat: "%b %e", timezone: "browser", monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], min: now_time.getTime() - 30*24*60*60000, max: now_time.getTime()};
+            }
+            else if (timePeriod == "Week") {
+                var now_time = new Date();
+                xaxisOptions = {mode: "time", timeformat: "%a %I%p", timezone: "browser", dayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], min: now_time.getTime() - 7*24*60*60000, max: now_time.getTime()};
+            }
+            else if (timePeriod == "Day") {
+                var now_time = new Date();
+                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: now_time.getTime() - 24*60*60000, max: now_time.getTime()};
+            }
+            else if (timePeriod == "Hour") {
+                var now_time = new Date();
+                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: now_time.getTime() - 60*60000, max: now_time.getTime()};
+            }
+            else if (timePeriod == "Now") {
+                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: comfort_now_start_time.getTime(), max: comfort_now_start_time.getTime() + 30*60000};
+                pmvSeries = {data: pmvData, color: 2, label: 'pmv', lines: {show: true }, points: {show: true}};
+                ppvSeries = {data: ppvData, color: 3, label: 'ppv', lines: {show: true }, points: {show: true}};
+            }
             plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
-        })
-        .fail(function() {
-            alert("network fail");
-        });
-    });
-    function update_graph() {
-        $.get( "{{ url_for('user_views.device_get_pmv_ppv_list', device_id=device.device_id) }}", {time_interval: "Now", start_time: now_start_time})
-        .success(function(data) {
-            pmvData = eval(data)[0];
-            ppvData = eval(data)[1];
-            pmvSeries = {data: pmvData, color: 2, label: 'pmv', lines: {show: true }, points: {show: true }};
-            ppvSeries = {data: ppvData, color: 3, label: 'ppv', lines: {show: true }, points: {show: true }};
-            plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
-	    	realtime_updater = setTimeout(update_graph, 10000);
+            if (timePeriod == "Now") {
+	    	    comfort_realtime_updater = setTimeout(function() {update_comfort_graph(timePeriod);}, 10000);
+	    	}
         })
         .fail(function() {
             alert("network fail");
@@ -77,8 +79,8 @@ $(document).ready(function() {
                         <div class="btn-group-vertical pull-right" id="ppvTimeSelectionGroup" style="margin-top: 10px;">
                             <button type="button" class="btn btn-default" >Month</button>
                             <button type="button" class="btn btn-default">Week</button>
-                            <button type="button" class="btn btn-default active">Day</button>
-                            <button type="button" class="btn btn-default">Hour</button>
+                            <button type="button" class="btn btn-default">Day</button>
+                            <button type="button" class="btn btn-default active">Hour</button>
                             <button type="button" class="btn btn-default">Now!</button>
                         </div>
                     </div>

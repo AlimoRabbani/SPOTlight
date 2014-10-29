@@ -3,7 +3,7 @@ $(document).ready(function() {
     $("#offset").slider();
 
     $("#offset").on("slideStop", function(slideEvt) {
-        $.get( "submit_offset/", "value=" + $('#offset').data('slider').getValue(), function() {})
+        $.get( "{{ url_for('user_views.submit_offset', device_id=device.device_id) }}", "value=" + $('#offset').data('slider').getValue(), function() {})
         .success(function() {
             $("#offsetNetworkAlert").hide();
             $("#offsetSuccessAlert").hide();

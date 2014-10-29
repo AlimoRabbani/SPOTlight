@@ -16,13 +16,16 @@ class DBService(rpyc.Service):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         spotlight_collection = collection.Collection(client.spotlight, "Temperatures")
-        document = {"timestamp": datetime.datetime.utcnow(), "device_id": device_id, "temperature": float(temperature)}
+        now_time = datetime.datetime.utcnow()
+        document = {"timestamp": now_time, "device_id": device_id, "temperature": float(temperature)}
         Config.logger.info("insert temperature:%s" % str(temperature))
         spotlight_collection.insert(document)
 
         device_collection = collection.Collection(client.spotlight, "Devices")
         device_collection.update({"device_id": device_id},
-                                 {"$set": {"device_ip": self._conn._config['endpoints'][1][0]}})
+                                 {"$set": {"device_ip": self._conn._config['endpoints'][1][0],
+                                           "latest_update": now_time,
+                                           "latest_temperature": float(temperature)}})
         client.close()
 
     @staticmethod
