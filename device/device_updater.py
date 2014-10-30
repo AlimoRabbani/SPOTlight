@@ -37,3 +37,8 @@ class Updater:
     @staticmethod
     def update_callback(update_dict):
         Config.logger.info(update_dict["status"])
+        if update_dict["status"] == "done":
+            Config.logger.info(update_dict["status"])
+            if hasattr(sys, "frozen"):
+                app = esky.Esky(sys.executable, Config.update_config["update_url"])
+                Config.logger.info("current version: %s" % app.active_version)
