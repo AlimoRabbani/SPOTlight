@@ -1,6 +1,3 @@
-{"version_id":"1.0",
-"update_url":"http://www.onible.com/SPOTlight/device/update.json",
-"main_file":"device_worker.py",
-"public_key":"SPOTlight_key.public",
+{"update_url":"http://sandstorm.cs.uwaterloo.ca/downloads/spotlight/",
 "update_interval":3600
 }

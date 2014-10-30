@@ -8,7 +8,6 @@ import RPi.GPIO as GPIO
 
 from spotlight_devices import RPi
 from config import Config
-from device_updater import Updater
 
 
 class DeviceService(rpyc.Service):
@@ -64,7 +63,6 @@ def motion_update_handler(motion):
 if __name__ == "__main__":
     Config.initialize()
     Config.logger.info("SPOTlight device worker started...")
-    Updater.start()
     server = ThreadedServer(DeviceService, hostname=Config.service_config["device_service_address"],
                             port=Config.service_config["device_service_port"], logger=Config.service_logger,
                             authenticator=None)

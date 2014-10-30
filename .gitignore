@@ -11,3 +11,15 @@ SPOTlight_key.private
 spotlightVenv/*
 
 web/insert_to_db.py
+
+build/*
+dist/*
+
+device/build/*
+device/dist/*
+
+db/build/*
+db/dist/*
+
+control/build/*
+control/dist/*
