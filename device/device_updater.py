@@ -30,7 +30,7 @@ class Updater:
     @staticmethod
     def auto_update(scheduler):
         if hasattr(sys, "frozen"):
-            app = esky.Esky(sys.executable, "http://sandstorm.cs.uwaterloo.ca/spotlight/downloads/")
+            app = esky.Esky(sys.executable, Config.update_config["update_url"])
             app.auto_update(callback=Updater.update_callback)
         scheduler.enter(int(Config.update_config["update_interval"]), 1, Updater.auto_update, (scheduler, ))
 
