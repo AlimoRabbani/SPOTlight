@@ -12,6 +12,7 @@ class Config:
     logger = logging.getLogger("SPOTlight RPi")
     service_logger = logging.getLogger("SPOTlight Device Services")
     resource_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/"
+    log_path = "/var/log/SPOTlight/"
 
     def __init__(self):
         pass
@@ -26,7 +27,7 @@ class Config:
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler(Config.resource_path + 'rpi.log')
+        file_handler = logging.FileHandler(Config.log_path + 'rpi.log')
         file_handler.setLevel(logging.DEBUG)
 
         console_handler = logging.StreamHandler()
@@ -42,7 +43,7 @@ class Config:
         service_logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler(Config.resource_path + 'device_services.log')
+        file_handler = logging.FileHandler(Config.log_path + 'device_services.log')
         file_handler.setLevel(logging.DEBUG)
 
         file_handler.setFormatter(formatter)
