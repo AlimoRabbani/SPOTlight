@@ -3,7 +3,7 @@ __author__ = 'Alimohammad'
 import json
 import logging
 import os
-
+import sys
 
 class Config:
     rpi_config = dict()
@@ -11,7 +11,7 @@ class Config:
     update_config = dict()
     logger = logging.getLogger("SPOTlight RPi")
     service_logger = logging.getLogger("SPOTlight Device Services")
-    resource_path = os.path.dirname(os.path.realpath(__file__)) + "/"
+    resource_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/"
 
     def __init__(self):
         pass
