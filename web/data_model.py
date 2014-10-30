@@ -104,17 +104,23 @@ class Device:
         self.device_ip = device_dict["device_ip"]
         self.device_mac = device_dict["device_mac"]
         self.box_number = device_dict["box_number"]
+
         self.is_alive = True
         self.is_overheating = False
-        self.latest_temperature = device_dict["latest_temperature"]
 
-        if device_dict["latest_update"]:
+        self.latest_temperature = None
+        self.latest_update_time = None
+        try:
+            self.latest_temperature = device_dict["latest_temperature"]
+        except KeyError:
+            current_app.logger.warn("No latest temperature for '%s'" % self.device_id)
+        try:
             from_zone = tz.tzutc()
             to_zone = tz.tzlocal()
             utc = device_dict["latest_update"].replace(tzinfo=from_zone)
             self.latest_update_time = utc.astimezone(to_zone)
-        else:
-            self.latest_update_time = None
+        except KeyError:
+            current_app.logger.warn("No latest update for '%s'" % self.device_id)
 
         self.update_warnings()
 
@@ -329,7 +335,7 @@ class Device:
         self.is_alive = False
         if not self.latest_update_time:
             return
-        if (datetime.datetime.utcnow() - self.latest_update_time).total_seconds() < current_app.config["custom_config"]["keepalive_interval"]:
+        if (datetime.datetime.utcnow().replace(tzinfo=tz.tzutc()).astimezone(tz.tzlocal()) - self.latest_update_time).total_seconds() < current_app.config["custom_config"]["keepalive_interval"]:
             self.is_alive = True
         if self.latest_temperature < current_app.config["custom_config"]["overheating_threshold"]:
             self.is_overheating = False
