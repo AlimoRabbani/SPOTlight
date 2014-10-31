@@ -68,8 +68,26 @@ if __name__ == "__main__":
     if hasattr(sys, "frozen"):
         app = esky.Esky(sys.executable, Config.update_config["update_url"])
         Config.logger.info("SPOTlight device worker %s started..." % app.active_version)
-    else:
-        Config.logger.info("SPOTlight device worker started...")
+        app.cleanup()
+        try:
+            control_conn = rpyc.connect(Config.service_config["control_service_address"],
+                                        Config.service_config["control_service_port"])
+            try:
+                control_conn.root.update_device_app_version(Config.service_config["device_id"], app.active_version)
+                control_conn.close()
+            except Exception, e:
+                Config.logger.warning("Error sending version to %s:%s" %
+                                      (Config.service_config["control_service_address"],
+                                       Config.service_config["control_service_port"]))
+                Config.logger.error(e)
+                control_conn.close()
+        except Exception, e:
+            Config.logger.warning("Error connecting to %s:%s" %
+                                  (Config.service_config["control_service_address"],
+                                   Config.service_config["control_service_port"]))
+            Config.logger.error(e)
+        else:
+            Config.logger.info("SPOTlight device worker started...")
     Updater.start()
     server = ThreadedServer(DeviceService, hostname=Config.service_config["device_service_address"],
                             port=Config.service_config["device_service_port"], logger=Config.service_logger,
