@@ -12,6 +12,25 @@ from db_updater import Updater
 
 
 class DBService(rpyc.Service):
+    @staticmethod
+    def exposed_update_device_app_version(device_id, version):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        spotlight_collection = collection.Collection(client.spotlight, "Devices")
+        Config.logger.info("update device app version for %s: %s" % (device_id, version))
+        spotlight_collection.update({"device_id": device_id}, {"$set": {"device_app_version": version}})
+        client.close()
+
+    # region CONTROL_APP
+    @staticmethod
+    def exposed_update_control_app_version(device_id, version):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        spotlight_collection = collection.Collection(client.spotlight, "Devices")
+        Config.logger.info("update control app version for %s: %s" % (device_id, version))
+        spotlight_collection.update({"device_id": device_id}, {"$set": {"control_app_version": version}})
+        client.close()
+
     def exposed_insert_temperature(self, temperature, device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
@@ -79,8 +98,9 @@ class DBService(rpyc.Service):
         Config.logger.info("fetched %s" % str(device))
         client.close()
         return device
+    # endregion
 
-    #Exposed methods for the web application
+    # region WEB_APP
     @staticmethod
     def exposed_get_user_by_email(email):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
@@ -342,6 +362,11 @@ class DBService(rpyc.Service):
             return temperature_list[0]
         else:
             return None
+
+    # endregion
+
+    def __init__(self):
+        pass
 
 if __name__ == "__main__":
     Config.initialize()
