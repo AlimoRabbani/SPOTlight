@@ -105,15 +105,26 @@ class Device:
         self.device_mac = device_dict["device_mac"]
         self.box_number = device_dict["box_number"]
 
+
+        # self.control_app_version = device_dict["box_number"]
+
         self.is_alive = True
         self.is_overheating = False
 
+        self.device_app_version = None
         self.latest_temperature = None
         self.latest_update_time = None
+
+        try:
+            self.device_app_version = device_dict["device_app_version"]
+        except KeyError:
+            current_app.logger.warn("No device app version for '%s'" % self.device_id)
+
         try:
             self.latest_temperature = device_dict["latest_temperature"]
         except KeyError:
             current_app.logger.warn("No latest temperature for '%s'" % self.device_id)
+
         try:
             from_zone = tz.tzutc()
             to_zone = tz.tzlocal()

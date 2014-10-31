@@ -362,11 +362,8 @@ class DBService(rpyc.Service):
             return temperature_list[0]
         else:
             return None
-
     # endregion
 
-    def __init__(self):
-        pass
 
 if __name__ == "__main__":
     Config.initialize()
