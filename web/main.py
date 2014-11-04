@@ -14,6 +14,7 @@ app.register_blueprint(common_views)
 app.register_blueprint(user_views)
 app.register_blueprint(admin_views)
 app.config["custom_config"] = json.loads(open("config.json").read())
+app.config['APPLICATION_ROOT'] = app.config["custom_config"]["root"]
 
 app.secret_key = app.config["custom_config"]["secret_key"]
 
