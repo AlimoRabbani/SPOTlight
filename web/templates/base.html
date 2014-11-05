@@ -26,7 +26,8 @@
     <![endif]-->
     <title>SPOTlight - {% block title %}{% endblock %}</title>
 </head>
-<body>
+<body id="page-top" data-spy="scroll" data-target="#sidenav">
+    <a class="anchor" id="top"></a>
     <div id="wrap">
         {%include 'navbar.html' %}
         {% block content %}{% endblock %}

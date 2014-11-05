@@ -4,47 +4,115 @@
 {% from "_formhelpers.html" import render_login_text %}
 {% from "_formhelpers.html" import render_login_check %}
 <div class="container">
-    <div class="row" style="margin-top:20px;">
-        <ol class="breadcrumb">
-            <li><a href="{{ url_for('common_views.index') }}">Home</a></li>
-            <li class="active">About</li>
-        </ol>
-    </div>
-    {% if error %}
-    <div class="alert alert-danger text-center">
-        {{ error }}
-    </div>
-    {% endif %}
-    <!-- Example row of columns -->
+    <!-- Intro Section -->
     <div class="row">
-        <div class="col-md-4">
-            <h2>Who is doing this?</h2>
-            <p>
-                A group of researchers at University of Waterloo started this project.
-                The project belongs to <a href="http://iss4e.ca">ISS4E Lab</a> and is supervised by
-                <a href="http://blizzard.cs.uwaterloo.ca/keshav/">Prof. Keshav</a>.
-                Currently, <a href="http://onible.com/">Alimohammad Rabbani</a>, Milad Khaki, and Costin Ograda-Bratu
-                are involved in the project. We are open to collaborate with other universities and groups on this project too.
-            </p>
+        <div class="col-lg-2 col-md-3">
+            <div class="bs-docs-sidebar hidden-print hidden-xs hidden-sm" data-spy="affix" id="sidenav" style="top: 100px;">
+                <ul class="nav bs-docs-sidenav">
+                    <li class="active">
+                        <a class="page-scroll" href="#intro">Introduction</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#design">Design</a>
+                        <ul class="nav">
+                            <li><a class="page-scroll" href="#design-architecture">Architecture</a></li>
+                            <li><a class="page-scroll" href="#design-hardware">Hardware</a></li>
+                            <li><a class="page-scroll" href="#design-software">Software</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#setup-modes">Setup Modes</a>
+                        <ul class="nav">
+                            <li><a class="page-scroll" href="#setup-privacy">Privacy-preserving</a></li>
+                            <li><a class="page-scroll" href="#setup-energy">Energy-aware</a></li>
+                            <li><a class="page-scroll" href="#setup-cost">Cost-effective</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <a class="back-to-top page-scroll" href="#page-top">
+                    Back to top
+                </a>
+            </div>
         </div>
-        <div class="col-md-4">
-            <h2>What is this website?</h2>
-            <p>
-                This website is created primarily for users to control and monitor their SPOTlight instances.
-                It also provides admin tools to monitor the deployment and start troubleshooting if something goes wrong.
-                The website also provides a brief description of SPOTlight for people who are interested in this kind of research.
-            </p>
-        </div>
-        <div class="col-md-4">
-            <h2>How can I help?</h2>
-            <p>
-                If you find yourself interested in this project, you can always contact us
-                at <a href="mailto:amrabban@uwaterloo.ca"> amrabban@uwaterloo.ca</a>. We are looking forward to
-                your comments and suggestions and we will be more than happy to have you on board if you are interested.
-            </p>
+        <div class="col-lg-10 col-md-9 col-sm-12 col-xs-12">
+            <section id="intro" class="about-section">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-6" style="padding: 0;">
+                        <h1>Introduction</h1>
+                        <p>
+                            SPOTlight makes offices more comfortable and office buildings more energy efficient.
+                            It has a temperature sensor, a motion sensor, and a fan/heater which are all connected to
+                            a Raspberry Pi. SPOTlight learns user preferences during a training period and uses that
+                            training to control the fan/heater.
+                        </p>
+                        <p>
+                            Using the motion sensor, it understands when the station is occupied, so it does not
+                            heat or cool when it is not necessary. Using the temperature sensor and the training,
+                            it knows when it should heat, cool, or simply do nothing. With its flexible architecture,
+                            we can easily make it privacy-preserving, or potentially, energy-aware.
+                        </p>
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-6">
+                        <img src="{{ url_for('static', filename='images/costin-with-spotlight.jpg')}}" alt="SPOTlight Big Picture" class="img-thumbnail">
+                    </div>
+                </div>
+            </section>
+
+            <section id="design" class="about-section">
+                <div class="row">
+                    <h1>Design</h1>
+                </div>
+            </section>
+
+            <section id="design-architecture" class="about-section">
+                <div class="row">
+                    <h3>Architecture</h3>
+                    <div class="col-lg-10 col-md-12 col-sm-12 col-lg-offset-1">
+                        <img src="{{ url_for('static', filename='images/basic_architecture.png')}}" alt="SPOTlight Big Picture" class="img-thumbnail">
+                    </div>
+                </div>
+            </section>
+
+            <section id="design-hardware" class="about-section">
+                <div class="row">
+                    <h3>Hardware</h3>
+                </div>
+            </section>
+
+            <section id="design-software" class="about-section">
+                <div class="row">
+                    <h3>Software</h3>
+                </div>
+            </section>
+
+            <section id="setup-modes" class="about-section">
+                <div class="row">
+                    <h1>Setup Modes</h1>
+                </div>
+            </section>
+
+            <section id="setup-privacy" class="about-section">
+                <div class="row">
+                    <h3>Privacy-preserving</h3>
+                </div>
+            </section>
+
+            <section id="setup-energy" class="about-section">
+                <div class="row">
+                    <h3>Energy-aware</h3>
+                </div>
+            </section>
+
+            <section id="setup-cost" class="about-section">
+                <div class="row">
+                    <h3>Cost-effective</h3>
+                </div>
+            </section>
+
         </div>
     </div>
-
-    <hr>
 </div> <!-- /container -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+<script src="{{ url_for('static', filename='js/jquery.scrollNav.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/scrolling-nav.js')}}"></script>
 {% endblock %}
