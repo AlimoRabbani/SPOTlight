@@ -84,7 +84,7 @@ class RPi:
         Config.logger.info("[Fan_Speed][%s][Fan_Voltage][%s][Bit_Value][%s]"
                            % (str(speed),str(speed_voltage), str(speed_12bit)))
         RPi.bus.write_word_data(int(Config.rpi_config["RPi_DAC_ADDRESS"], 16),
-                                int(Config.rpi_config["RPi_DAC_CMD"], 16), RPi.reverse_byte_order(speed_12bit))
+                                speed_12bit >> 12, (speed_12bit << 8) >> 8)
 
     @staticmethod
     def set_fan_state(on):
