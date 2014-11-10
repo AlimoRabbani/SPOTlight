@@ -22,6 +22,7 @@ class RPi:
         GPIO.setup(Config.rpi_config["RPi_FAN_PIN"], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(Config.rpi_config["RPi_HEATER_PIN"], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(Config.rpi_config["RPi_DAC_AUX_PIN"], GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup(Config.rpi_config["RPi_STATUS_PIN"], GPIO.OUT, initial=GPIO.LOW)
         RPi.temperature_callback = temperature_callback
         RPi.motion_callback = motion_callback
 
