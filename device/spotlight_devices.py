@@ -21,6 +21,7 @@ class RPi:
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(Config.rpi_config["RPi_FAN_PIN"], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(Config.rpi_config["RPi_HEATER_PIN"], GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup(Config.rpi_config["RPi_DAC_AUX_PIN"], GPIO.OUT, initial=GPIO.LOW)
         RPi.temperature_callback = temperature_callback
         RPi.motion_callback = motion_callback
 
@@ -47,9 +48,12 @@ class RPi:
 
     @staticmethod
     def read_motion():
+        current_status = False
         sum_of_squares = sum_of_motion = counter = 0
         while True:
             start_time = time.time()
+            current_status = not current_status
+            GPIO.output(Config.rpi_config["RPi_STATUS_PIN"], current_status)
             data = RPi.bus.read_word_data(int(Config.rpi_config["RPi_ADC_ADDRESS"], 16),
                                           int(Config.rpi_config["RPi_MOTION_CMD"], 16))
             raw_motion = (RPi.reverse_byte_order(data) & 0x0fff) / 4.096

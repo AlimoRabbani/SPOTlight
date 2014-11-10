@@ -49,8 +49,6 @@ class ReactiveControl:
             Config.logger.error(e)
         PMV.update_parameters()
         ReactiveControl.update_occupancy_bucket(standard_deviation)
-        #calculate new a, b if there is a vote
-        #insert (PMV, vote) to database and read during initiation
         ReactiveControl.make_decision()
 
     @staticmethod
