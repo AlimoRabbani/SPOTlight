@@ -76,7 +76,7 @@ class ReactiveControl:
     @staticmethod
     def make_decision():
         ppv = PMV.calculate_ppv(0.5, float(ReactiveControl.current_temperature),
-                                float(ReactiveControl.current_temperature), 1.2, 0.0, 100.0)
+                                float(ReactiveControl.current_temperature), 1.2, 0.0, 60.0)
         if ReactiveControl.occupancy_bucket_value == 0 and ReactiveControl.current_heat_state:
             if ReactiveControl.set_heat_state(False):
                 ReactiveControl.insert_state_to_db()
@@ -93,8 +93,7 @@ class ReactiveControl:
                 ReactiveControl.insert_state_to_db()
         elif (ReactiveControl.occupancy_bucket_value == Config.control_config["occupancy_bucket_size"] and
                       ppv > Config.control_config["pmv_threshold"]):
-            speed = 2.1
-            #calculate the perfect air speed
+            speed = ReactiveControl.calculate_air_speed()
             if ReactiveControl.set_cool_state(True, speed):
                 ReactiveControl.insert_state_to_db()
         elif (ReactiveControl.occupancy_bucket_value == Config.control_config["occupancy_bucket_size"]
@@ -102,6 +101,18 @@ class ReactiveControl:
             if ReactiveControl.set_heat_state(True):
                 ReactiveControl.insert_state_to_db()
         ReactiveControl.insert_ppv_to_db()
+
+    @staticmethod
+    def calculate_air_speed():
+        air_speed = 0.0
+        while air_speed <= 2.1:
+            ppv = PMV.calculate_ppv(0.5, float(ReactiveControl.current_temperature),
+                                    float(ReactiveControl.current_temperature), 1.2, air_speed, 60.0)
+            if Config.control_config["pmv_threshold"] > ppv > 0 - Config.control_config["pmv_threshold"]:
+                return air_speed
+            else:
+                air_speed += 0.1
+        return air_speed
 
     @staticmethod
     def set_heat_state(on):
@@ -180,16 +191,16 @@ class ReactiveControl:
     @staticmethod
     def insert_ppv_to_db():
         ppv = PMV.calculate_ppv(0.5, float(ReactiveControl.current_temperature),
-                                float(ReactiveControl.current_temperature), 1.2, 0.0, 100.0)
+                                float(ReactiveControl.current_temperature), 1.2, 0.0, 60.0)
         pmv = PMV.calculate_pmv(0.5, float(ReactiveControl.current_temperature),
-                                float(ReactiveControl.current_temperature), 1.2, 0.0, 100.0)
+                                float(ReactiveControl.current_temperature), 1.2, 0.0, 60.0)
         if ReactiveControl.current_cool_state:
             ppv = PMV.calculate_ppv(0.5, float(ReactiveControl.current_temperature),
                                     float(ReactiveControl.current_temperature), 1.2,
-                                    ReactiveControl.current_air_speed, 100.0)
+                                    ReactiveControl.current_air_speed, 60.0)
             pmv = PMV.calculate_pmv(0.5, float(ReactiveControl.current_temperature),
                                     float(ReactiveControl.current_temperature), 1.2,
-                                    ReactiveControl.current_air_speed, 100.0)
+                                    ReactiveControl.current_air_speed, 60.0)
         try:
             db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
             try:
