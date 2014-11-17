@@ -80,9 +80,9 @@ class RPi:
         # Converting 0.0-1.0 fan speed to a 12 bit voltage based number understandable by the ADC
         speed_voltage = (Config.rpi_config["fan_max_speed_voltage"] - Config.rpi_config["fan_min_speed_voltage"])*speed\
                         + Config.rpi_config["fan_min_speed_voltage"]
-        speed_12bit = int((speed_voltage/(Config.rpi_config["RPi_MAX_VOLTAGE"] - Config.rpi_config["RPi_MIN_VOLTAGE"])) * 4096)
+        speed_12bit = int((speed_voltage/(Config.rpi_config["RPi_MAX_VOLTAGE"] - Config.rpi_config["RPi_MIN_VOLTAGE"])) * 4096 * 16)
         Config.logger.info("[Fan_Speed][%s][Fan_Voltage][%s][Bit_Value][%s]"
-                           % (str(speed),str(speed_voltage), str(speed_12bit)))
+                           % (str(speed), str(speed_voltage), format(RPi.reverse_byte_order(speed_12bit), '02x')))
         RPi.bus.write_word_data(int(Config.rpi_config["RPi_DAC_ADDRESS"], 16),
                                 int(Config.rpi_config["RPi_DAC_CMD"], 16), RPi.reverse_byte_order(speed_12bit))
 
