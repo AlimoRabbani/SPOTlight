@@ -21,8 +21,13 @@ class RPi:
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(Config.rpi_config["RPi_FAN_PIN"], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(Config.rpi_config["RPi_HEATER_PIN"], GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup(Config.rpi_config["RPi_DAC_AUX_PIN"], GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup(Config.rpi_config["RPi_DAC_AUX_PIN"], GPIO.OUT, initial=GPIO.HIGH)
+        GPIO.setup(Config.rpi_config["RPi_DAC_LDAC_PIN"], GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(Config.rpi_config["RPi_STATUS_PIN"], GPIO.OUT, initial=GPIO.LOW)
+
+        RPi.bus.write_word_data(int(Config.rpi_config["RPi_DAC_ADDRESS"], 16),
+                                int(Config.rpi_config["RPi_DAC_REF_CMD"], 16), 0)
+
         RPi.temperature_callback = temperature_callback
         RPi.motion_callback = motion_callback
 
@@ -84,7 +89,7 @@ class RPi:
         Config.logger.info("[Fan_Speed][%s][Fan_Voltage][%s][Bit_Value][%s]"
                            % (str(speed), str(speed_voltage), format(RPi.reverse_byte_order(speed_12bit), '02x')))
         RPi.bus.write_word_data(int(Config.rpi_config["RPi_DAC_ADDRESS"], 16),
-                                int(Config.rpi_config["RPi_DAC_CMD"], 16), RPi.reverse_byte_order(speed_12bit))
+                                int(Config.rpi_config["RPi_DAC_LOAD_CMD"], 16), RPi.reverse_byte_order(speed_12bit))
 
     @staticmethod
     def set_fan_state(on):
