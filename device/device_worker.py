@@ -7,6 +7,7 @@ from rpyc.utils.server import ThreadedServer
 import RPi.GPIO as GPIO
 import esky
 import sys
+import time
 
 from spotlight_devices import RPi
 from device_updater import Updater
@@ -17,6 +18,7 @@ class DeviceService(rpyc.Service):
     @staticmethod
     def exposed_set_fan_state(on, speed):
         RPi.set_fan_state(on)
+        time.sleep(0.1)
         RPi.set_fan_speed(speed)
 
     @staticmethod
