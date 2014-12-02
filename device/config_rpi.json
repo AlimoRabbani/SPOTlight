@@ -15,6 +15,6 @@
 "RPi_FAN_PIN":16,
 "RPi_HEATER_PIN":18,
 "RPi_STATUS_PIN":15,
-"fan_max_speed_voltage":1.0,
-"fan_min_speed_voltage":2.35
+"fan_max_speed_voltage":0.8,
+"fan_min_speed_voltage":2.20
 }
