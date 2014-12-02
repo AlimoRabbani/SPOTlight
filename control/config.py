@@ -3,6 +3,7 @@ __author__ = 'Alimohammad'
 import json
 import logging
 import os
+import sys
 
 
 class Config:
@@ -11,7 +12,8 @@ class Config:
     update_config = dict()
     logger = logging.getLogger("SPOTlight Decision")
     service_logger = logging.getLogger("SPOTlight Decision Services")
-    resource_path = os.path.dirname(os.path.realpath(__file__)) + "/"
+    resource_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/"
+    log_path = "/var/log/SPOTlight/"
 
     def __init__(self):
         pass
@@ -26,7 +28,7 @@ class Config:
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler(Config.resource_path + 'control.log')
+        file_handler = logging.FileHandler(Config.log_path + 'control.log')
         file_handler.setLevel(logging.INFO)
 
         console_handler = logging.StreamHandler()
@@ -42,7 +44,7 @@ class Config:
         service_logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler(Config.resource_path + 'control_services.log')
+        file_handler = logging.FileHandler(Config.log_path + 'control_services.log')
         file_handler.setLevel(logging.INFO)
 
         file_handler.setFormatter(formatter)
