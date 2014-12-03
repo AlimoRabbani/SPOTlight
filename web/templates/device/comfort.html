@@ -10,6 +10,7 @@ $(document).ready(function() {
     var pmvSeries = {data: pmvData, color: 2, label: 'PMV', lines: {show: true }};
     var ppvSeries = {data: ppvData, color: 3, label: 'PPV', lines: {show: true }};
     var xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
+    var yaxisOptions = {min: -3, max: 3}
     update_comfort_graph("Hour");
     $('#ppvTimeSelectionGroup').delegate('button', 'click', function() {
         $(this).addClass('active').siblings().removeClass("active");
@@ -55,7 +56,7 @@ $(document).ready(function() {
                 pmvSeries = {data: pmvData, color: 2, label: 'pmv', lines: {show: true }, points: {show: true}};
                 ppvSeries = {data: ppvData, color: 3, label: 'ppv', lines: {show: true }, points: {show: true}};
             }
-            plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
+            plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, yaxis: yaxisOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
             if (timePeriod == "Now") {
 	    	    comfort_realtime_updater = setTimeout(function() {update_comfort_graph(timePeriod);}, 10000);
 	    	}
