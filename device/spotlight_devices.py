@@ -112,12 +112,14 @@ class RPi:
     def set_heater_state(on):
         Config.logger.info("[Heater_State][%s]" % str(on))
         try:
-            RPi.set_fan_state(on)
             if on:
                 RPi.set_fan_speed(1.0)
+                RPi.set_fan_state(on)
+                GPIO.output(Config.rpi_config["RPi_HEATER_PIN"], on)
             else:
+                GPIO.output(Config.rpi_config["RPi_HEATER_PIN"], on)
+                RPi.set_fan_state(on)
                 RPi.set_fan_speed(0.0)
-            GPIO.output(Config.rpi_config["RPi_HEATER_PIN"], on)
         except Exception, e:
             Config.logger.warning("Error Accessing GPIO...")
             Config.logger.error(e)
