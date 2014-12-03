@@ -17,13 +17,24 @@ from config import Config
 class DeviceService(rpyc.Service):
     @staticmethod
     def exposed_set_fan_state(on, speed):
-        RPi.set_fan_state(on)
-        time.sleep(0.1)
-        RPi.set_fan_speed(speed)
+        try:
+            RPi.set_fan_state(on)
+            time.sleep(0.1)
+            RPi.set_fan_speed(speed)
+        except Exception, e:
+            Config.logger.warning("Error Accessing Fan...")
+            Config.logger.error(e)
+            raise e
+
 
     @staticmethod
     def exposed_set_heater_state(on):
-        RPi.set_heater_state(on)
+        try:
+            RPi.set_heater_state(on)
+        except Exception, e:
+            Config.logger.warning("Error Accessing Heater...")
+            Config.logger.error(e)
+            raise e
 
 
 def temperature_update_handler(temperature):

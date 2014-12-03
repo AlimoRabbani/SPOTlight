@@ -88,23 +88,41 @@ class RPi:
         speed_12bit = int((speed_voltage/(Config.rpi_config["RPi_MAX_VOLTAGE"] - Config.rpi_config["RPi_MIN_VOLTAGE"])) * 4096 * 16)
         Config.logger.info("[Fan_Speed][%s][Fan_Voltage][%s][Bit_Value][%s]"
                            % (str(speed), str(speed_voltage), format(RPi.reverse_byte_order(speed_12bit), '02x')))
-        RPi.bus.write_word_data(int(Config.rpi_config["RPi_DAC_ADDRESS"], 16),
-                                int(Config.rpi_config["RPi_DAC_LOAD_CMD"], 16), RPi.reverse_byte_order(speed_12bit))
+        try:
+            RPi.bus.write_word_data(int(Config.rpi_config["RPi_DAC_ADDRESS"], 16),
+                                    int(Config.rpi_config["RPi_DAC_LOAD_CMD"], 16), RPi.reverse_byte_order(speed_12bit))
+        except Exception, e:
+            Config.logger.warning("Error Accessing DAC...")
+            Config.logger.error(e)
+            raise e
+
 
     @staticmethod
     def set_fan_state(on):
-        GPIO.output(Config.rpi_config["RPi_FAN_PIN"], on)
         Config.logger.info("[Fan_State][%s]" % str(on))
+        try:
+            GPIO.output(Config.rpi_config["RPi_FAN_PIN"], on)
+        except Exception, e:
+            Config.logger.warning("Error Accessing GPIO...")
+            Config.logger.error(e)
+            raise e
+
 
     @staticmethod
     def set_heater_state(on):
-        RPi.set_fan_state(on)
-        if on:
-            RPi.set_fan_speed(1.0)
-        else:
-            RPi.set_fan_speed(0.0)
-        GPIO.output(Config.rpi_config["RPi_HEATER_PIN"], on)
         Config.logger.info("[Heater_State][%s]" % str(on))
+        try:
+            RPi.set_fan_state(on)
+            if on:
+                RPi.set_fan_speed(1.0)
+            else:
+                RPi.set_fan_speed(0.0)
+            GPIO.output(Config.rpi_config["RPi_HEATER_PIN"], on)
+        except Exception, e:
+            Config.logger.warning("Error Accessing GPIO...")
+            Config.logger.error(e)
+            raise e
+
 
     @staticmethod
     def reverse_byte_order(data, byte_count=2):
