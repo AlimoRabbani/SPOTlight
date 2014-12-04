@@ -13,7 +13,7 @@ $(document).ready(function() {
 
 
     var xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-    var yaxesOptions = [{position: "left", min: 0, max: 1.2}, {min: 20, max: 30, position: "right"}]
+    var yaxesOptions = [{position: "left", min: 0, max: 2.2}, {min: 20, max: 30, position: "right"}]
     update_occupancy_graph("Hour");
     $('#occupancyTimeSelectionGroup').delegate('button', 'click', function() {
         $(this).addClass('active').siblings().removeClass("active");

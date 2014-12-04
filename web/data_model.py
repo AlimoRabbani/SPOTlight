@@ -337,7 +337,7 @@ class Device:
         # counter = 0
         for occupancy_item in occupancy_list:
             # if (counter % skipper_value) == 0:
-            occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, int(occupancy_item["occupancy"]/2) ])
+            occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, int(occupancy_item["occupancy"]) ])
             # counter += 1
         return [occupancy_modified_list, temperature_modified_list]
         # return [motion_modified_list, occupancy_modified_list, temperature_modified_list]
