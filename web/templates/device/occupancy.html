@@ -13,7 +13,7 @@ $(document).ready(function() {
 
 
     var xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-    var yaxesOptions = [{position: "left", min: 0, max: 2.2}, {min: 20, max: 30, position: "right"}]
+    var yaxesOptions = [{position: "left", min: 0, max: 1.2}, {min: 20, max: 30, position: "right"}]
     update_occupancy_graph("Hour");
     $('#occupancyTimeSelectionGroup').delegate('button', 'click', function() {
         $(this).addClass('active').siblings().removeClass("active");
@@ -60,7 +60,7 @@ $(document).ready(function() {
                 temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', lines: {show: true}, points: {show: true},  yaxis: 2};
             }
 
-            plot = $.plot("#occupancyChart", [occupancySeries, temperatureSeries], {xaxis: xaxisOptions, yaxes: yaxesOptions, grid: {hoverable: true}, tooltip: true, legend: {position: "nw"}});
+            plot = $.plot("#occupancyChart", [occupancySeries, temperatureSeries], {xaxis: xaxisOptions, yaxes: yaxesOptions, grid: {hoverable: true}, tooltip: true, tooltipOpts: {content: "Time: %x, %s: %y.2"}, legend: {position: "nw"}});
             if(timePeriod == "Now") {
 	    	    occupancy_realtime_updater = setTimeout(function() {update_occupancy_graph(timePeriod);}, 10000);
 	    	}

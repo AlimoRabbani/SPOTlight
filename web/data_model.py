@@ -324,23 +324,19 @@ class Device:
             temperature_modified_list.append([(temperature_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, temperature_item["temperature"]])
             # counter += 1
 
-        # motion_modified_list = list()
-        # skipper_value = (len(motion_list) / 100) + 1
-        # counter = 0
-        # for motion_item in motion_list:
-            # if (counter % skipper_value) == 0:
-            # motion_modified_list.append([(motion_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, motion_item["std"]])
-            # counter += 1
-
         occupancy_modified_list = list()
-        # skipper_value = (len(occupancy_list) / 100) + 1
-        # counter = 0
+        previous_occupancy = 0
         for occupancy_item in occupancy_list:
-            # if (counter % skipper_value) == 0:
-            occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, int(occupancy_item["occupancy"]) ])
-            # counter += 1
+            current_occupancy = int(occupancy_item["occupancy"])
+            if current_occupancy == 1 and previous_occupancy == 2:
+                current_occupancy = 1
+            elif current_occupancy == 1 and previous_occupancy == 0:
+                current_occupancy = 0
+            elif current_occupancy == 2:
+                current_occupancy = 1
+            previous_occupancy = current_occupancy
+            occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, current_occupancy])
         return [occupancy_modified_list, temperature_modified_list]
-        # return [motion_modified_list, occupancy_modified_list, temperature_modified_list]
 
     def update_warnings(self):
         self.is_alive = False
