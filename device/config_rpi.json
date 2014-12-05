@@ -1,4 +1,4 @@
-{"occupancy_std_interval":120,
+{"occupancy_std_interval":30,
 "temperature_reading_resolution":10,
 "motion_reading_resolution":0.5,
 "RPi_ADC_ADDRESS":"0x34",
