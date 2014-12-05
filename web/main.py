@@ -9,7 +9,19 @@ from views.user_views import user_views
 from views.admin_views import admin_views
 from data_model import User
 
+class ReverseProxied(object):
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        scheme = environ.get('X-Forwarded-Proto', '')
+        if scheme:
+            environ['wsgi.url_scheme'] = scheme
+        return self.app(environ, start_response)
+
+
 app = Flask(__name__)
+app.wsgi_app = ReverseProxied(app.wsgi_app)
 app.register_blueprint(common_views)
 app.register_blueprint(user_views)
 app.register_blueprint(admin_views)
