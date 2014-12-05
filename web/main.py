@@ -3,6 +3,7 @@ __author__ = 'Alimohammad'
 from flask import Flask, render_template
 from flask_login import LoginManager
 import json
+import logging
 
 from views.common_views import common_views
 from views.user_views import user_views
@@ -26,6 +27,10 @@ app.register_blueprint(common_views)
 app.register_blueprint(user_views)
 app.register_blueprint(admin_views)
 app.config["custom_config"] = json.loads(open("config.json").read())
+
+file_handler = logging.FileHandler('spotstar_web.log')
+file_handler.setLevel(logging.DEBUG)
+app.logger.addHandler(file_handler)
 
 app.secret_key = app.config["custom_config"]["secret_key"]
 
