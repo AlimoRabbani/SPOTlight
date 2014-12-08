@@ -245,7 +245,7 @@ class DBService(rpyc.Service):
             previous_pmv = pmv_ppv_list[i]["pmv"]
             previous_ppv = pmv_ppv_list[i]["ppv"]
         pmv_ppv_augmented_list.append(pmv_ppv_list[-1])
-        return pmv_ppv_augmented_list
+        return pmv_ppv_list
 
     @staticmethod
     def exposed_get_temperature_list(device_id, start_date):
