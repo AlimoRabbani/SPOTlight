@@ -252,7 +252,7 @@ class DBService(rpyc.Service):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
         ppv_collection = collection.Collection(client.spotlight, "PPVs")
-        pmv_ppv_list = list(ppv_collection.find({"device_id": device_id}).sort({"timestamp": -1}).limit(1))
+        pmv_ppv_list = list(ppv_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
         Config.logger.info("fetched last (pmv,ppv) for device '%s'" % str(device_id))
         client.close()
         return pmv_ppv_list
