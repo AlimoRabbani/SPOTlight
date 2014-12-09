@@ -254,6 +254,16 @@ class DBService(rpyc.Service):
         return temperature_list[0::skipper_value]
 
     @staticmethod
+    def exposed_get_last_temperature(device_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        temperature_collection = collection.Collection(client.spotlight, "Temperatures")
+        temperature_list = list(temperature_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
+        Config.logger.info("fetched last temperature for device '%s'" % str(device_id))
+        client.close()
+        return temperature_list
+
+    @staticmethod
     def exposed_get_occupancy_list(device_id, start_date):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
@@ -277,6 +287,16 @@ class DBService(rpyc.Service):
             previous_occupancy = occupancy_list[i]["occupancy"]
         occupancy_augmented_list.append(occupancy_list[-1])
         return occupancy_augmented_list
+
+    @staticmethod
+    def exposed_get_last_occupancy(device_id):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        occupancy_collection = collection.Collection(client.spotlight, "Occupancies")
+        occupancy_list = list(occupancy_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
+        Config.logger.info("fetched last occupancy for device '%s'" % str(device_id))
+        client.close()
+        return occupancy_list
 
     @staticmethod
     def exposed_get_motion_list(device_id, start_date):
