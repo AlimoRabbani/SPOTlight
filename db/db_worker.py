@@ -250,21 +250,8 @@ class DBService(rpyc.Service):
         Config.logger.info("fetched temperatures for device '%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
-        temperature_augmented_list = list()
-        temperature_augmented_list.append(temperature_list[0])
-        previous_temperature = temperature_list[0]["temperature"]
-        prev_in_augmented = True
-        for i in range(1, len(temperature_list)):
-            if math.fabs(temperature_list[i]["temperature"] - previous_temperature) > 0.1 + ((math.log10(len(temperature_list)) - 2) * 0.01):
-                # if not prev_in_augmented:
-                    # temperature_augmented_list.append(temperature_list[i-1])
-                temperature_augmented_list.append(temperature_list[i])
-                prev_in_augmented = True
-            else:
-                prev_in_augmented = False
-            previous_temperature = temperature_list[i]["temperature"]
-        temperature_augmented_list.append(temperature_list[-1])
-        return temperature_augmented_list
+        skipper_value = (len(temperature_list) / 2000) + 1
+        return temperature_list[0::skipper_value]
 
     @staticmethod
     def exposed_get_occupancy_list(device_id, start_date):
