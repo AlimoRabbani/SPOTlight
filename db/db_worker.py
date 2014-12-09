@@ -228,24 +228,8 @@ class DBService(rpyc.Service):
         Config.logger.info("fetched (pmv,ppv) for device '%s' from %s" %
                            (str(device_id), start_date.strftime("%Y-%m-%d %H:%M:%S")))
         client.close()
-        pmv_ppv_augmented_list = list()
-        pmv_ppv_augmented_list.append(pmv_ppv_list[0])
-        previous_pmv = pmv_ppv_list[0]["pmv"]
-        previous_ppv = pmv_ppv_list[0]["ppv"]
-        prev_in_augmented = True
-        for i in range(1, len(pmv_ppv_list)):
-            if (math.fabs(pmv_ppv_list[i]["pmv"] - previous_pmv) > 0.02 + (math.log10(len(pmv_ppv_list)) - 2)*0.01) or\
-                    (math.fabs(pmv_ppv_list[i]["ppv"] - previous_ppv) > 0.02 + (math.log10(len(pmv_ppv_list)) - 2)*0.01):
-                if not prev_in_augmented:
-                    pmv_ppv_augmented_list.append(pmv_ppv_list[i-1])
-                pmv_ppv_augmented_list.append(pmv_ppv_list[i])
-                prev_in_augmented = True
-            else:
-                prev_in_augmented = False
-            previous_pmv = pmv_ppv_list[i]["pmv"]
-            previous_ppv = pmv_ppv_list[i]["ppv"]
-        pmv_ppv_augmented_list.append(pmv_ppv_list[-1])
-        return pmv_ppv_list
+        skipper_value = (len(pmv_ppv_list) / 2000) + 1
+        return pmv_ppv_list[0::skipper_value]
 
     @staticmethod
     def exposed_get_last_pmv_ppv(device_id):
