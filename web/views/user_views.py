@@ -51,7 +51,9 @@ def device_get_pmv_ppv_list(device_id):
         elif request.args.get("time_interval") == "Hour":
             pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(hours=-1))
         elif request.args.get("time_interval") == "Now":
-            pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.fromtimestamp(float(request.args.get("start_time"))))
+            pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(minutes=-15))
+        elif request.args.get("time_interval") == "Last":
+            pmv_ppv_list = device.get_last_pmv_ppv()
         return json.dumps(pmv_ppv_list)
     else:
         abort(403)
@@ -71,7 +73,9 @@ def device_get_occupancy_temperature_list(device_id):
         elif request.args.get("time_interval") == "Hour":
             occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() + datetime.timedelta(hours=-1))
         elif request.args.get("time_interval") == "Now":
-            occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.fromtimestamp(float(request.args.get("start_time"))))
+            occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() + datetime.timedelta(minutes=-15))
+        elif request.args.get("time_interval") == "Last":
+            occupancy_temperature_list = device.get_last_occupancy_temperature()
         return json.dumps(occupancy_temperature_list)
     else:
         abort(403)

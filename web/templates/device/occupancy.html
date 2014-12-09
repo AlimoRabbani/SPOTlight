@@ -1,73 +1,89 @@
 <script>
 $(document).ready(function() {
-    var occupancy_now_start_time = new Date();
-    occupancy_now_start_time_offset = (occupancy_now_start_time.getTime() + occupancy_now_start_time.getTimezoneOffset()*60*1000)/1000;
+    var d = new Date();
+    var timezoneOffset = d.getTimezoneOffset();
+    Highcharts.setOptions({
+        global: {
+            timezoneOffset: timezoneOffset
+        }
+    });
 
-    var occupancySeries = {data: occupancyData, color: 3, label: 'Occupancy', lines: {show: true }, yaxis: 1};
-    var temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', yaxis: 2};
+    var occupancyCategories = ['Unoccupied', 'Occupied'];
 
     var occupancy_realtime_updater;
 
     var occupancyData = [];
     var temperatureData = [];
 
+    initialize_occupancy_graph("Hour");
 
-    var xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-    var yaxesOptions = [{position: "left", min: 0, max: 1.2}, {min: 20, max: 30, position: "right"}]
-    update_occupancy_graph("Hour");
     $('#occupancyTimeSelectionGroup').delegate('button', 'click', function() {
+        clearTimeout(occupancy_realtime_updater);
         $(this).addClass('active').siblings().removeClass("active");
         var timePeriod = $(this).text();
         if (timePeriod == "Now!") {
-            occupancy_now_start_time = new Date();
-            occupancy_now_start_time_offset = (occupancy_now_start_time.getTime() + occupancy_now_start_time.getTimezoneOffset()*60*1000)/1000;
             update_occupancy_graph("Now");
             return;
         }
         else {
-            clearTimeout(occupancy_realtime_updater);
             update_occupancy_graph(timePeriod)
         }
     });
-    function update_occupancy_graph(timePeriod) {
-        $.get( "{{ url_for('user_views.device_get_occupancy_temperature_list', device_id=device.device_id) }}", {time_interval: timePeriod, start_time: occupancy_now_start_time_offset})
+
+    function update_occupancy_realtime_graph() {
+        $.get( "{{ url_for('user_views.device_get_occupancy_temperature_list', device_id=device.device_id) }}", {time_interval: 'Last'})
         .success(function(data) {
+            var occupancyChart = $('#occupancyChart').highcharts();
             occupancyData = eval(data)[0];
             temperatureData = eval(data)[1];
-
-            occupancySeries = {data: occupancyData, color: 3, label: 'Occupancy', lines: {show: true }, yaxis: 1};
-            temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', lines: {show: true}, yaxis: 2};
-
-            if (timePeriod == "Month") {
-                var now_time = new Date();
-                xaxisOptions = {mode: "time", timeformat: "%b %e", timezone: "browser", monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], min: now_time.getTime() - 30*24*60*60000, max: now_time.getTime()};
+            if (occupancyData[0][0] != occupancyChart.series[0].data[occupancyChart.series[0].data.length - 1].x) {
+                occupancyChart.series[0].addPoint(occupancyData[0], true, false);
             }
-            else if (timePeriod == "Week") {
-                var now_time = new Date();
-                xaxisOptions = {mode: "time", timeformat: "%a %I%p", timezone: "browser", dayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], min: now_time.getTime() - 7*24*60*60000, max: now_time.getTime()};
+            if (temperatureData[0][0] != occupancyChart.series[1].data[occupancyChart.series[1].data.length - 1].x) {
+                occupancyChart.series[1].addPoint(temperatureData[0], true, false);
             }
-            else if (timePeriod == "Day") {
-                var now_time = new Date();
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: now_time.getTime() - 24*60*60000, max: now_time.getTime()};
-            }
-            else if (timePeriod == "Hour") {
-                var now_time = new Date();
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: now_time.getTime() - 60*60000, max: now_time.getTime()};
-            }
-            else if (timePeriod == "Now") {
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: occupancy_now_start_time.getTime(), max: occupancy_now_start_time.getTime() + 30*60000};
-                occupancySeries = {data: occupancyData, color: 3, label: 'Occupancy', lines: {show: true}, points: {show: true}, yaxis: 1};
-                temperatureSeries = {data: temperatureData, color: 4, label: 'Temperature', lines: {show: true}, points: {show: true},  yaxis: 2};
-            }
-
-            plot = $.plot("#occupancyChart", [occupancySeries, temperatureSeries], {xaxis: xaxisOptions, yaxes: yaxesOptions, grid: {hoverable: true}, tooltip: true, tooltipOpts: {content: "Time: %x, %s: %y.2"}, legend: {position: "nw"}});
-            if(timePeriod == "Now") {
-	    	    occupancy_realtime_updater = setTimeout(function() {update_occupancy_graph(timePeriod);}, 10000);
-	    	}
         })
         .fail(function() {
             alert("network fail");
         });
+        occupancy_realtime_updater = setTimeout(function() {update_occupancy_realtime_graph();}, 1000);
+    }
+
+    function initialize_occupancy_graph(timePeriod) {
+        $.get( "{{ url_for('user_views.device_get_occupancy_temperature_list', device_id=device.device_id) }}", {time_interval: timePeriod})
+        .success(function(data) {
+            occupancyData = eval(data)[0];
+            temperatureData = eval(data)[1];
+            $('#occupancyChart').highcharts({
+                chart: {
+                    zoomType: 'x',
+                    type: 'line',
+                    alignTicks: false
+                },
+                credits: {enabled: false},
+                title: {text: ''},
+                xAxis: {type: 'datetime', minRange: 15 * 60000},
+                yAxis: [{title: '', min: 20, max: 30, tickInterval: 2}, {title: '', min: 0, max: 1, tickInterval: 1, opposite: true,
+                    labels: {formatter: function () {return occupancyCategories[this.value];}}
+                }],
+                legend: {enabled: true},
+                plotOptions: {line: {lineWidth: 2}},
+                legend: {layout: 'vertical', align: 'right', x: 10, verticalAlign: 'middle', y: -30, floating: true,
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'},
+                series: [{type: 'line', color: '#19D11C', name: 'Occupancy', data: occupancyData, yAxis:1},
+                    {type: 'line', name: 'Temperature', color: '#A437CC', data: temperatureData, tooltip: {valueDecimals: 2}}]
+            });
+            if (timePeriod == "Now") {
+	    	    occupancy_realtime_updater = setTimeout(function() {update_occupancy_realtime_graph();}, 1000);
+            }
+        })
+        .fail(function() {
+            alert("network fail");
+        });
+    }
+    function update_occupancy_graph(timePeriod) {
+        $('#occupancyChart').highcharts().destroy();
+        initialize_occupancy_graph(timePeriod)
 	}
 });
 </script>

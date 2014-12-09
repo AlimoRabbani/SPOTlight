@@ -287,18 +287,36 @@ class Device:
             current_app.logger.error(e)
         pmv_list = list()
         ppv_list = list()
-        # skipper_value = (len(pmv_ppv_list) / 100) + 1
-        # counter = 0
         for pmv_ppv_item in pmv_ppv_list:
-            # if (counter % skipper_value) == 0:
             pmv_list.append([(pmv_ppv_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, pmv_ppv_item["pmv"]])
             ppv_list.append([(pmv_ppv_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, pmv_ppv_item["ppv"]])
-            # counter += 1
+        return [pmv_list, ppv_list]
+
+    def get_last_pmv_ppv(self):
+        pmv_ppv_list = list()
+        try:
+            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
+                                   current_app.config["custom_config"]["db_service_port"],
+                                   config={"allow_pickle": True, "allow_public_attrs": True})
+            try:
+                pmv_ppv_list = pickle.loads(pickle.dumps(db_conn.root.get_last_pmv_ppv(self.device_id)))
+                db_conn.close()
+            except Exception, e:
+                current_app.logger.warn("There was a problem reading from db")
+                current_app.logger.error(e)
+                db_conn.close()
+        except Exception, e:
+            current_app.logger.warning("There was a problem connecting to db")
+            current_app.logger.error(e)
+        pmv_list = list()
+        ppv_list = list()
+        for pmv_ppv_item in pmv_ppv_list:
+            pmv_list.append([(pmv_ppv_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, pmv_ppv_item["pmv"]])
+            ppv_list.append([(pmv_ppv_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, pmv_ppv_item["ppv"]])
         return [pmv_list, ppv_list]
 
     def get_occupancy_temperature_list(self, start_date):
         temperature_list = list()
-        # motion_list = list()
         occupancy_list = list()
         try:
             db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
@@ -306,7 +324,6 @@ class Device:
                                    config={"allow_pickle": True, "allow_public_attrs": True})
             try:
                 temperature_list = pickle.loads(pickle.dumps(db_conn.root.get_temperature_list(self.device_id, start_date)))
-                # motion_list = pickle.loads(pickle.dumps(db_conn.root.get_motion_list(self.device_id, start_date)))
                 occupancy_list = pickle.loads(pickle.dumps(db_conn.root.get_occupancy_list(self.device_id, start_date)))
                 db_conn.close()
             except Exception, e:
@@ -317,12 +334,8 @@ class Device:
             current_app.logger.warning("There was a problem connecting to db")
             current_app.logger.error(e)
         temperature_modified_list = list()
-        # skipper_value = (len(temperature_list) / 100) + 1
-        # counter = 0
         for temperature_item in temperature_list:
-            # if (counter % skipper_value) == 0:
             temperature_modified_list.append([(temperature_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, temperature_item["temperature"]])
-            # counter += 1
 
         occupancy_modified_list = list()
         previous_occupancy = 0
@@ -336,6 +349,33 @@ class Device:
                 current_occupancy = 1
             previous_occupancy = current_occupancy
             occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, current_occupancy])
+        return [occupancy_modified_list, temperature_modified_list]
+
+    def get_last_occupancy_temperature(self):
+        temperature_list = list()
+        occupancy_list = list()
+        try:
+            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
+                                   current_app.config["custom_config"]["db_service_port"],
+                                   config={"allow_pickle": True, "allow_public_attrs": True})
+            try:
+                temperature_list = pickle.loads(pickle.dumps(db_conn.root.get_last_temperature(self.device_id)))
+                occupancy_list = pickle.loads(pickle.dumps(db_conn.root.get_last_occupancy(self.device_id)))
+                db_conn.close()
+            except Exception, e:
+                current_app.logger.warn("There was a problem reading from db")
+                current_app.logger.error(e)
+                db_conn.close()
+        except Exception, e:
+            current_app.logger.warning("There was a problem connecting to db")
+            current_app.logger.error(e)
+        temperature_modified_list = list()
+        for temperature_item in temperature_list:
+            temperature_modified_list.append([(temperature_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, temperature_item["temperature"]])
+
+        occupancy_modified_list = list()
+        for occupancy_item in occupancy_list:
+            occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, occupancy_item["occupancy"]/2.0])
         return [occupancy_modified_list, temperature_modified_list]
 
     def update_warnings(self):

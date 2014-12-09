@@ -1,69 +1,84 @@
 <script>
 $(document).ready(function() {
-    var comfort_now_start_time = new Date();
-    comfort_now_start_time_offset = (comfort_now_start_time.getTime() + comfort_now_start_time.getTimezoneOffset()*60*1000)/1000;
+    var d = new Date();
+    var timezoneOffset = d.getTimezoneOffset();
+    Highcharts.setOptions({
+        global: {
+            timezoneOffset: timezoneOffset
+        }
+    });
+    var pmvCategories = ['Cold', 'Cool', 'Slightly Cool', 'Neutral', 'Slightly Warm', 'Warm', 'Hot'];
 
     var pmvData = []
     var ppvData = []
 
     var comfort_realtime_updater;
-    var pmvSeries = {data: pmvData, color: 2, label: 'PMV', lines: {show: true }};
-    var ppvSeries = {data: ppvData, color: 3, label: 'PPV', lines: {show: true }};
-    var xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser"};
-    var yaxisOptions = {min: -3, max: 3}
-    update_comfort_graph("Hour");
+    initialize_comfort_graph("Hour");
     $('#ppvTimeSelectionGroup').delegate('button', 'click', function() {
+        clearTimeout(comfort_realtime_updater);
         $(this).addClass('active').siblings().removeClass("active");
         var timePeriod = $(this).text();
         if (timePeriod == "Now!") {
-            comfort_now_start_time = new Date();
-            comfort_now_start_time_offset = (comfort_now_start_time.getTime() + comfort_now_start_time.getTimezoneOffset()*60*1000)/1000;
             update_comfort_graph("Now");
             return;
         }
         else {
-            clearTimeout(comfort_realtime_updater);
             update_comfort_graph(timePeriod);
         }
     });
-    function update_comfort_graph(timePeriod) {
-        $.get( "{{ url_for('user_views.device_get_pmv_ppv_list', device_id=device.device_id) }}", {time_interval: timePeriod, start_time: comfort_now_start_time_offset})
+    function update_comfort_realtime_graph() {
+        $.get( "{{ url_for('user_views.device_get_pmv_ppv_list', device_id=device.device_id) }}", {time_interval: 'Last'})
         .success(function(data) {
+            var comfortChart = $('#ppvChart').highcharts();
             pmvData = eval(data)[0];
             ppvData = eval(data)[1];
-
-            pmvSeries = {data: pmvData, color: 2, label: 'PMV', lines: {show: true }};
-            ppvSeries = {data: ppvData, color: 3, label: 'PPV', lines: {show: true }};
-
-            if (timePeriod == "Month") {
-                var now_time = new Date();
-                xaxisOptions = {mode: "time", timeformat: "%b %e", timezone: "browser", monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], min: now_time.getTime() - 30*24*60*60000, max: now_time.getTime()};
+            if (pmvData[0][0] != comfortChart.series[0].data[comfortChart.series[0].data.length - 1].x) {
+                comfortChart.series[0].addPoint(pmvData[0], false, false);
+                comfortChart.series[1].addPoint(ppvData[0], true, false);
             }
-            else if (timePeriod == "Week") {
-                var now_time = new Date();
-                xaxisOptions = {mode: "time", timeformat: "%a %I%p", timezone: "browser", dayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], min: now_time.getTime() - 7*24*60*60000, max: now_time.getTime()};
-            }
-            else if (timePeriod == "Day") {
-                var now_time = new Date();
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: now_time.getTime() - 24*60*60000, max: now_time.getTime()};
-            }
-            else if (timePeriod == "Hour") {
-                var now_time = new Date();
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: now_time.getTime() - 60*60000, max: now_time.getTime()};
-            }
-            else if (timePeriod == "Now") {
-                xaxisOptions = {mode: "time", timeformat: "%H:%M", timezone: "browser", min: comfort_now_start_time.getTime(), max: comfort_now_start_time.getTime() + 30*60000};
-                pmvSeries = {data: pmvData, color: 2, label: 'pmv', lines: {show: true }, points: {show: true}};
-                ppvSeries = {data: ppvData, color: 3, label: 'ppv', lines: {show: true }, points: {show: true}};
-            }
-            plot = $.plot("#ppvChart", [pmvSeries, ppvSeries], {xaxis: xaxisOptions, yaxis: yaxisOptions, grid: {hoverable: true}, tooltip: true, tooltipOpts: {content: "Time: %x, %s: %y.2"}, legend: {position: "nw"}});
-            if (timePeriod == "Now") {
-	    	    comfort_realtime_updater = setTimeout(function() {update_comfort_graph(timePeriod);}, 10000);
-	    	}
         })
         .fail(function() {
             alert("network fail");
         });
+        comfort_realtime_updater = setTimeout(function() {update_comfort_realtime_graph();}, 1000);
+    }
+    function initialize_comfort_graph(timePeriod) {
+        $.get( "{{ url_for('user_views.device_get_pmv_ppv_list', device_id=device.device_id) }}", {time_interval: timePeriod})
+        .success(function(data) {
+            pmvData = eval(data)[0];
+            ppvData = eval(data)[1];
+            $('#ppvChart').highcharts({
+                chart: {
+                    zoomType: 'x',
+                    type: 'line'
+                },
+                credits: {enabled: false},
+                title: {text: ''},
+                xAxis: {type: 'datetime', minRange: 15 * 60000},
+                yAxis: {title: '', min: -3, max: 3, tickInterval: 1,
+                    labels: {formatter: function () {return pmvCategories[this.value + 3];}},
+                },
+                tooltip: {
+                    shared: true,
+                    valueDecimals: 2
+                },
+                legend: {enabled: true},
+                plotOptions: {line: {lineWidth: 2}},
+                legend: {layout: 'vertical', align: 'right', x: 10, verticalAlign: 'bottom', y: -22, floating: true,
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'},
+                series: [{type: 'line', color: '#D62929', name: 'Standard', data: pmvData}, {type: 'line', name: 'Personalized', color: '#19D11C', data: ppvData}]
+            });
+            if (timePeriod == "Now") {
+	    	    comfort_realtime_updater = setTimeout(function() {update_comfort_realtime_graph();}, 1000);
+            }
+        })
+        .fail(function() {
+            alert("network fail");
+        });
+    }
+    function update_comfort_graph(timePeriod) {
+        $('#ppvChart').highcharts().destroy();
+        initialize_comfort_graph(timePeriod)
 	}
 });
 </script>
@@ -71,7 +86,7 @@ $(document).ready(function() {
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="panel panel-primary">
             <div class="panel-heading">
-                <h3 class="panel-title">My Comfort</h3>
+                <h3 class="panel-title">Predicted Comfort</h3>
             </div>
             <div class="panel-body">
                 <div class="row" style="padding-left:10px;">
