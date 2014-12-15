@@ -1,6 +1,21 @@
 {% extends "base.html" %}
 {% block title %}{{ device.device_location }}{% endblock %}
 {% block content %}
+<script type='text/javascript'>
+$(document).ready(function() {
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        if ($(e.target).attr('href') == "#comfort") {
+            $('#ppvChart').highcharts().reflow();
+        }
+        else if ($(e.target).attr('href') == "#occupancy") {
+            $('#occupancyChart').highcharts().reflow();
+        }
+    });
+});
+</script>
+
+<div id="content">
+</div>
 <div class="container" style="padding-top:20px;">
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -11,15 +26,38 @@
             </ol>
         </div>
     </div>
-    {% if device.get_training() %}
-    {% include 'device/training_active.html' %}
-    {% endif %}
-    {% include 'device/offset.html' %}
-    {% include 'device/comfort.html' %}
-    {% include 'device/occupancy.html' %}
-    {% if not device.get_training() %}
-    {% include 'device/training.html' %}
-    {% endif %}
+    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+        {% if device.get_training() %}
+        <li class="active"><a href="#training-active" data-toggle="tab">Training</a></li>
+        {% endif %}
+        <li{% if not device.get_training() %} class="active"{% endif %}><a href="#offset" data-toggle="tab">Offset</a></li>
+        <li><a href="#comfort" data-toggle="tab">Comfort</a></li>
+        <li><a href="#occupancy" data-toggle="tab">Occupancy</a></li>
+        {% if not device.get_training() %}
+        <li><a href="#training" data-toggle="tab">Training</a></li>
+        {% endif %}
+    </ul>
+    <div id="my-tab-content" class="tab-content">
+        {% if device.get_training() %}
+        <div class="tab-pane active" id="training-active">
+            {% include 'device/training_active.html' %}
+        </div>
+        {% endif %}
+        <div class="tab-pane {% if not device.get_training() %} active" {% else %} " {% endif %} id="offset">
+            {% include 'device/offset.html' %}
+        </div>
+        <div class="tab-pane" id="comfort">
+            {% include 'device/comfort.html' %}
+        </div>
+        <div class="tab-pane" id="occupancy">
+            {% include 'device/occupancy.html' %}
+        </div>
+        {% if not device.get_training() %}
+        <div class="tab-pane" id="training">
+            {% include 'device/training.html' %}
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
 {% block body_bottom %}
