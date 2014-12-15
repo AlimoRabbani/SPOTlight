@@ -2,8 +2,8 @@
 $(document).ready(function() {
     $("#offset-slider").slider();
 
-    $("#offset").on("slideStop", function(slideEvt) {
-        $.get( "{{ url_for('user_views.submit_offset', device_id=device.device_id) }}", "value=" + $('#offset').data('slider').getValue(), function() {})
+    $("#offset-slider").on("slideStop", function(slideEvt) {
+        $.get( "{{ url_for('user_views.submit_offset', device_id=device.device_id) }}", "value=" + $('#offset-slider').data('slider').getValue(), function() {})
         .success(function() {
             $("#offsetNetworkAlert").hide();
             $("#offsetSuccessAlert").hide();
