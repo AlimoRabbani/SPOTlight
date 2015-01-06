@@ -1,8 +1,6 @@
 <script type='text/javascript'>
 $(document).ready(function() {
-    $('#offset-slider').slider({step:0.2, min: -2.0, max: 2.0});
-
-    $("#offset-slider").on("slideStop", function(slideEvt) {
+    $('#offset-slider').slider({step:0.2, min: -2.0, max: 2.0}).on("slideStop", function(slideEvt) {
         $.get( "{{ url_for('user_views.submit_offset', device_id=device.device_id) }}", "value=" + $('#offset-slider').data('slider').getValue(), function() {})
         .success(function() {
             $("#offsetNetworkAlert").hide();
