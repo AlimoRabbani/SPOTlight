@@ -1,7 +1,7 @@
 <script type='text/javascript'>
 $(document).ready(function() {
     $("#offset-slider").slider().on("slideStop", function(slideEvt) {
-        $.get( "{{ url_for('user_views.submit_offset', device_id=device.device_id) }}", "value=" + $('#offset-slider').data('slider').getValue(), function() {})
+        $.get( "{{ url_for('user_views.submit_offset', device_id=device.device_id) }}", "value=" + slideEvt.value, function() {})
         .success(function() {
             $("#offsetNetworkAlert").hide();
             $("#offsetSuccessAlert").hide();
@@ -45,7 +45,7 @@ $(document).ready(function() {
                     <div class="row">
                         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 col-lg-offset-1 col-md-offset-1 col-sm-offset-1 col-xs-offset-1" style="text-align:right;">Cooler</div>
                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-                            <input id="offset-slider" type="text" data-slider-min="-2.0" data-slider-max="2.0" data-slider-step="0.2" data-slider-value="{{ device.device_parameter_offset }}"/>
+                            <input id="offset-slider" data-slider-id='offsetSlider' data-slider-min="-2.00" data-slider-max="2.00" data-slider-step="0.20" data-slider-value="{{ device.device_parameter_offset }}"/>
                         </div>
                         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" style="text-align:left;">Warmer</div>
                     </div>
