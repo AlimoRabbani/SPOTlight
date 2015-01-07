@@ -120,6 +120,6 @@ def end_training(device_id):
 def submit_offset(device_id):
     device = current_user.get_device(device_id)
     if device is not None:
-        if device.update_offset(int(request.args.get("value"))):
+        if device.update_offset(float(request.args.get("value"))):
             return "ok"
     abort(403)
