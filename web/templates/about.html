@@ -15,6 +15,7 @@
                     <li>
                         <a class="page-scroll" href="#design">Design</a>
                         <ul class="nav">
+                            <li><a class="page-scroll" href="#design-goals">Goals</a></li>
                             <li><a class="page-scroll" href="#design-architecture">Architecture</a></li>
                             <li><a class="page-scroll" href="#design-hardware">Hardware</a></li>
                             <li><a class="page-scroll" href="#design-software">Software</a></li>
@@ -28,6 +29,15 @@
                             <li><a class="page-scroll" href="#setup-cost">Cost-effective</a></li>
                         </ul>
                     </li>
+                    <li>
+                        <a class="page-scroll" href="#resources">Resources</a>
+                        <ul class="nav">
+                            <li><a class="page-scroll" href="#resources-publications">Publications</a></li>
+                            <li><a class="page-scroll" href="#resources-software">Software</a></li>
+                            <li><a class="page-scroll" href="#resources-hardware">Hardware</a></li>
+                        </ul>
+                    </li>
+
                 </ul>
                 <a class="back-to-top page-scroll" href="#page-top">
                     Back to top
@@ -37,12 +47,12 @@
         <div class="col-lg-10 col-md-9 col-sm-12 col-xs-12">
             <section id="intro" class="about-section">
                 <div class="row">
-                    <div class="col-lg-6 col-md-6 col-sm-6" style="padding: 0;">
-                        <h1>Introduction</h1>
+                    <div class="col-lg-7 col-md-7 col-sm-7" style="padding: 0;">
+                        <h2>Introduction</h2>
                         <p>
-                            SPOTlight makes offices more comfortable and office buildings more energy efficient.
+                            SPOT* makes offices more comfortable and office buildings more energy efficient.
                             It has a temperature sensor, a motion sensor, and a fan/heater which are all connected to
-                            a Raspberry Pi. SPOTlight learns user preferences during a training period and uses that
+                            a Raspberry Pi. SPOT* learns user preferences during a training period and uses that
                             training to control the fan/heater.
                         </p>
                         <p>
@@ -51,8 +61,25 @@
                             it knows when it should heat, cool, or simply do nothing. With its flexible architecture,
                             we can easily make it privacy-preserving, or potentially, energy-aware.
                         </p>
+                        <p>
+                            This work extends prior work on the SPOT and SPOT+ personal thermal
+                            control systems. Both systems use the Predicted Personal Vote (PPV) model
+                            to automatically adjust room heating to maintain a desired comfort level.
+                            SPOT is <em>reactive</em>, in that it only heats the room when the worker
+                            is actually present, and SPOT+ is <em>pro-active</em>, pre-heating the workspace before
+                            the arrival of the worker, or turn off heating in anticipation of the worker's departure.
+                            SPOT* differs from both systems in five significant ways. First, it controls <em>both</em>
+                            heating and cooling, so can be used both in winter and in summer. Second, it is about
+                            an order of magnitude <em>less expensive</em>. Third, it implements an innovative
+                            software architecture that allows <em>flexible tradeoffs</em> between cost, privacy,
+                            and data durability. Specifically, it allows most software components to execute either on
+                            the thermal controller, in the Internet cloud, or on the worker's smartphone.
+                            Fourth, the use of a fan instead of a radiant heater makes it possible to
+                            <em>rapidly react</em> to worker discomfort. Finally, it is far less intrusive than
+                            our two prior systems, because it does not use a camera.
+                        </p>
                     </div>
-                    <div class="col-lg-6 col-md-6 col-sm-6">
+                    <div class="col-lg-5 col-md-5 col-sm-5">
                         <img src="{{ url_for('static', filename='images/costin-with-spotlight.jpg')}}" alt="SPOTlight Big Picture" class="img-thumbnail">
                     </div>
                 </div>
@@ -60,13 +87,45 @@
 
             <section id="design" class="about-section">
                 <div class="row">
-                    <h1>Design</h1>
+                    <h2>Design</h2>
                 </div>
             </section>
-
+            <section id="design-goals" class="about-section">
+                <div class="row">
+                    <h4>Goals</h4>
+                    <ul>
+                        <li>
+                            <strong>Reduce Cost</strong>
+                            Our primary design goal is to reduce the price of SPOT*,
+                            compared to SPOT. The main reason our two prior systems were
+                            expensive was because they monitored workers using a Kinect camera
+                            that is directly connected to a powerful processing unit (i.e. a PC with Microsoft Windows)
+                            which accounts for about 50% of the overall system cost.
+                        </li><br/>
+                        <li>
+                            <strong>Allow both Cooling and Heating</strong>
+                            A secondary design goal is for SPOT* to provide comfort both in
+                            summer and in winter, unlike SPOT, which only addressed heating.
+                        </li><br/>
+                        <li>
+                            <strong>Keep User Data Private</strong>
+                            User occupancy data is inherently private information that should not
+                            be exposed to third parties. We would like to guarantee this
+                            despite allowing SPOT* to be on the Internet.
+                        </li><br/>
+                        <li>
+                            <strong>Improve User Experience</strong>
+                            SPOT's infrared camera, used for clothing level detection,
+                            closely tracks user movements. Some users found this unnerving,
+                            and therefore, one of our goals in building SPOT* is to not require
+                            observation of users with a web or infrared camera.
+                        </li>
+                    </ul>
+                </div>
+            </section>
             <section id="design-architecture" class="about-section">
                 <div class="row">
-                    <h3>Architecture</h3>
+                    <h4>Architecture</h4>
                     <div class="col-lg-10 col-md-12 col-sm-12 col-lg-offset-1">
                         <img src="{{ url_for('static', filename='images/basic_architecture.png')}}" alt="SPOTlight Big Picture" class="img-responsive">
                     </div>
@@ -75,37 +134,80 @@
 
             <section id="design-hardware" class="about-section">
                 <div class="row">
-                    <h3>Hardware</h3>
+                    <h4>Hardware</h4>
                 </div>
             </section>
 
             <section id="design-software" class="about-section">
                 <div class="row">
-                    <h3>Software</h3>
+                    <h4>Software</h4>
                 </div>
             </section>
 
             <section id="setup-modes" class="about-section">
                 <div class="row">
-                    <h1>Setup Modes</h1>
+                    <h2>Setup Modes</h2>
                 </div>
             </section>
 
             <section id="setup-privacy" class="about-section">
                 <div class="row">
-                    <h3>Privacy-preserving</h3>
+                    <h4>Privacy-preserving</h4>
                 </div>
             </section>
 
             <section id="setup-energy" class="about-section">
                 <div class="row">
-                    <h3>Energy-aware</h3>
+                    <h4>Energy-aware</h4>
                 </div>
             </section>
 
             <section id="setup-cost" class="about-section">
                 <div class="row">
-                    <h3>Cost-effective</h3>
+                    <h4>Cost-effective</h4>
+                </div>
+            </section>
+
+            <section id="resources" class="about-section">
+                <div class="row">
+                    <h2>Resources</h2>
+                    <p>
+                        We want to keep SPOT an open system that everybody can replicate and test. Therefore,
+                        we provide pointers to all the materials required to build SPOT*. This includes papers
+                        written about the SPOT systems, software components, and hardware maps.
+                    </p>
+                </div>
+            </section>
+
+            <section id="resources-publications" class="about-section">
+                <div class="row">
+                    <h4>Publications</h4>
+                    <ul>
+                        <li>P. X. Gao and S. Keshav,<a href="http://blizzard.cs.uwaterloo.ca/iss4e/wp-content/uploads/2013/10/buildsys-camera.pdf"> Optimal Personal Comfort Management Using SPOT+</a>, <em>Proc. BuildSys Workshop</em>, Nov 2013. <strong>Best Student Paper Award.</strong></li>
+                        <li>P. X. Gao and S. Keshav,&nbsp;<a href="http://blizzard.cs.uwaterloo.ca/iss4e/wp-content/uploads/2012/03/personalAC.pdf">SPOT: A Smart Personalized Ofﬁce Thermal Control System</a>, <em>Proc. ACM e-Energy 2013</em>, May 2013.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="resources-software" class="about-section">
+                <div class="row">
+                    <h4>Software</h4>
+                    <p>
+                        All software components of SPOT* are maintained in a git repository.
+                        Please refer to <a href="https://github.com/AlimoRabbani/SPOTstar">this repository</a> on github for the source code and documentation.
+                    </p>
+                </div>
+            </section>
+
+            <section id="resources-hardware" class="about-section">
+                <div class="row">
+                    <h4>Hardware</h4>
+                    <ul>
+                        <li><a href="http://www.raspberrypi.org/products/model-b-plus/">Raspberry Pi Model B+</a>, and <a href="www.edimax.com/en/produce_detail.php?pd_id=347">Edimax EW-7811Un</a> WiFi USB dongle</li>
+                        <li>Actuation circuit schematics and PCB design</li>
+                        <li>Sensing circuit schematics and PCB design</li>
+                        <li><a href="http://www.hammondmfg.com/dwg5sp.htm">Actuation box enclosure</a> (1598GSGYPBK) and <a href="http://www.hammondmfg.com/dwg9.htm">sensing box enclosure</a> (1551RBK)</li>
+                    </ul>
                 </div>
             </section>
 
