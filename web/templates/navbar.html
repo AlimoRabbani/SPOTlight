@@ -18,6 +18,9 @@
                 <li{% if request.path == url_for('common_views.about') %} class="active"{% endif %}>
                     <a href="{{ url_for('common_views.about') }}">About SPOT*</a>
                 </li>
+                <li{% if request.path == url_for('common_views.participate') %} class="active"{% endif %}>
+                    <a href="{{ url_for('common_views.participate') }}">Participate</a>
+                </li>
             </ul>
         </div>
         {% if current_user.is_authenticated() %}
@@ -48,7 +51,6 @@
             <form class="navbar-form navbar-right" role="form" method=post action="{{ url_for('common_views.index') }}">
                 {{ render_login_text(form.email) }}
                 {{ render_login_text(form.password) }}
-                {{ render_login_check(form.remember) }}
                 <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
             </form>
         </div><!--/.navbar-collapse -->

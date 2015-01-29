@@ -18,7 +18,7 @@ def index():
         user = User.get(email=form.email.data)
         if user is not None:
             if user.authenticate(form.password.data):
-                if login_user(user, remember=form.remember.data):
+                if login_user(user, remember=True):
                     current_app.logger.debug(url_for("user_views.devices_view"))
                     return redirect(request.args.get("next") or url_for("user_views.devices_view"))
             else:
@@ -35,13 +35,30 @@ def about():
         user = User.get(email=form.email.data)
         if user is not None:
             if user.authenticate(form.password.data):
-                if login_user(user, remember=form.remember.data):
+                if login_user(user, remember=True):
                     return redirect(request.args.get("next") or url_for("user_views.devices_view"))
             else:
                 error = "Email and password do not match!"
         else:
             error = "A user with this email does not exist!"
     return render_template("about.html", form=form, error=error)
+
+@common_views.route('/participate/', methods=["GET", "POST"])
+def participate():
+    form = LoginForm(request.form)
+    error = None
+    if request.method == 'POST' and form.validate():
+        user = User.get(email=form.email.data)
+        if user is not None:
+            if user.authenticate(form.password.data):
+                if login_user(user, remember=True):
+                    return redirect(request.args.get("next") or url_for("user_views.devices_view"))
+            else:
+                error = "Email and password do not match!"
+        else:
+            error = "A user with this email does not exist!"
+    return render_template("participate.html", form=form, error=error)
+
 
 @common_views.route("/logout/")
 @login_required

@@ -1,8 +1,13 @@
 {% extends "base.html" %}
-{% block title %}My Comfort Management Tool{% endblock %}
+{% block title %}About{% endblock %}
 {% block content %}
 {% from "_formhelpers.html" import render_login_text %}
 {% from "_formhelpers.html" import render_login_check %}
+{% if error %}
+<div class="alert alert-danger text-center">
+    {{ error }}
+</div>
+{% endif %}
 <div class="container">
     <!-- Intro Section -->
     <div class="row">
@@ -16,9 +21,26 @@
                         <a class="page-scroll" href="#design">Design</a>
                         <ul class="nav">
                             <li><a class="page-scroll" href="#design-goals">Goals</a></li>
-                            <li><a class="page-scroll" href="#design-architecture">Architecture</a></li>
-                            <li><a class="page-scroll" href="#design-hardware">Hardware</a></li>
-                            <li><a class="page-scroll" href="#design-software">Software</a></li>
+                            <li>
+                                <a class="page-scroll" href="#design-architecture">Architecture</a>
+                                <ul class="nav">
+                                    <li><a class="page-scroll" href="#design-actuation-sensing">Actuation, Sensing</a></li>
+                                    <li><a class="page-scroll" href="#design-controlapp">Control App</a></li>
+                                    <li><a class="page-scroll" href="#design-dbapp">DB App</a></li>
+                                    <li><a class="page-scroll" href="#design-webapp">Web APP</a></li>
+                                    <li><a class="page-scroll" href="#design-gui">GUI</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#implementation">Design</a>
+                        <ul class="nav">
+                            <li><a class="page-scroll" href="#implementation-actuation-sensing">Actuation, Sensing</a></li>
+                            <li><a class="page-scroll" href="#implementation-controlapp">Control App</a></li>
+                            <li><a class="page-scroll" href="#implementation-dbapp">DB App</a></li>
+                            <li><a class="page-scroll" href="#implementation-webapp">Web APP</a></li>
+                            <li><a class="page-scroll" href="#implementation-gui">GUI</a></li>
                         </ul>
                     </li>
                     <li>
@@ -47,7 +69,7 @@
         <div class="col-lg-10 col-md-9 col-sm-12 col-xs-12">
             <section id="intro" class="about-section">
                 <div class="row">
-                    <div class="col-lg-7 col-md-7 col-sm-7" style="padding: 0;">
+                    <div class="col-lg-12 col-md-12 col-sm-12" style="padding: 0;">
                         <h2>Introduction</h2>
                         <p>
                             SPOT* makes offices more comfortable and office buildings more energy efficient.
@@ -61,6 +83,9 @@
                             it knows when it should heat, cool, or simply do nothing. With its flexible architecture,
                             we can easily make it privacy-preserving, or potentially, energy-aware.
                         </p>
+                        <div class="col-lg-6 col-md-7 col-sm-7" style="display: inline-block; float:right; padding-bottom:10px;">
+                            <img src="{{ url_for('static', filename='images/costin-with-spotlight.jpg')}}" alt="SPOT* Demonstration" class="img-thumbnail">
+                        </div>
                         <p>
                             This work extends prior work on the SPOT and SPOT+ personal thermal
                             control systems. Both systems use the Predicted Personal Vote (PPV) model
@@ -79,9 +104,6 @@
                             our two prior systems, because it does not use a camera.
                         </p>
                     </div>
-                    <div class="col-lg-5 col-md-5 col-sm-5">
-                        <img src="{{ url_for('static', filename='images/costin-with-spotlight.jpg')}}" alt="SPOTlight Big Picture" class="img-thumbnail">
-                    </div>
                 </div>
             </section>
 
@@ -90,7 +112,7 @@
                     <h2>Design</h2>
                 </div>
             </section>
-            <section id="design-goals" class="about-section">
+            <section id="design-goals" class="about-section" style="padding-top:30px;">
                 <div class="row">
                     <h4>Goals</h4>
                     <ul>
@@ -126,24 +148,71 @@
             <section id="design-architecture" class="about-section">
                 <div class="row">
                     <h4>Architecture</h4>
-                    <div class="col-lg-10 col-md-12 col-sm-12 col-lg-offset-1">
-                        <img src="{{ url_for('static', filename='images/basic_architecture.png')}}" alt="SPOTlight Big Picture" class="img-responsive">
+                    <div class="col-lg-7 col-md-8 col-sm-8" style="display: inline-block; float:right; padding-bottom:10px;">
+                        <img src="{{ url_for('static', filename='images/basic_architecture.png')}}" alt="SPOT* Big Picture" class="img-responsive">
                     </div>
+                    <p>
+                        Our overall system architecture is shown in this figure.
+                        Each of the software components shown on the right hand side can be executed on a per-office
+                        embedded compute platform, in the cloud, or even on a worker's smartphone.
+                    </p>
+                    <ul>
+                        <li id="design-actuation-sensing" class="about-section">
+                            <strong>Actuation, Sensing, and Device App:</strong>
+                            This part of the system consists of a heating/cooling device, sensors, actuators,
+                            and a <em>device app</em> executing on the RPi. The device app communicates with
+                            the control app to send updates, and receive and execute commands. It requires minimal
+                            computation, and therefore can even be executed on an even lighter-weight platform, such
+                            as a mote. In fact, before we decided on using an RPi, we built a prototype system using
+                            a Zolertia Z1 mote. However, the Z1 turned out to be much more expensive than the RPi!
+                        </li>
+                        <li id="design-controlapp" class="about-section">
+                            <strong>Control Application:</strong>
+                            Based on occupancy and comfort, the control app decides to turn the fan/heater on or off,
+                            determines the fan's speed, and communicates with the device app to carry out the command.
+                            The control app can run on the RPi or the cloud. The control app also communicates with
+                            the DB app to log all events--such as changes in temperature and occupancy and changes
+                            in device status--and to receive user feedback.
+                        </li>
+                        <li id="design-dbapp" class="about-section">
+                            <strong>Data Storage:</strong>
+                            SPOT* keeps a log of measurements, events, and user feedback. The data can be stored on
+                            the RPi for better privacy, or can be moved to the cloud to provide better reliability and
+                            availability, and enable coordination with a centralized building HVAC system in the
+                            future. We use the data for system administration and debugging, making control decisions
+                            based on user input, and providing feedback to the user in the form of historical charts.
+                            <br/><br/>
+                            The data storage component consists of a database, and a DB application that provides an
+                            interface for other software components. For better security, this component
+                            limits database access to certain functions, such as inserting and querying occupancy and
+                            temperature, querying users, and inserting device states.
+                        </li>
+                        <li id="design-webapp" class="about-section">
+                            <div class="col-lg-6 col-md-7 col-sm-7" style="display: inline-block; float:right; padding-bottom:10px;">
+                                <img src="{{ url_for('static', filename='images/spotstar_with_screen.jpg')}}" alt="SPOT* with Touch Screen" class="img-thumbnail">
+                            </div>
+                            <strong>Web Application:</strong>
+                            The web application both provides information to SPOT* users and administrators,
+                            and receives feedback from them. The web application can run on the RPi
+                            (to provide access only to the user), or can run in the cloud (to enable universal access).
+                            During the training phase, the web application collects votes from the user to determine
+                            coefficients for the PPV equation. Specifically, it computes the anticipated comfort
+                            from the PMV equation and collects user votes on comfort level. It then computes a
+                            linear regression to translate from the PMV value to the PPV value. It also provides
+                            a manual override for users to deal with exceptional conditions. In addition, it visualizes
+                            measurements and events for users to monitor their comfort and occupancy.
+                        </li>
+                        <li id="design-gui" class="about-section">
+                            <strong>Graphical User Interface:</strong>
+                            The GUI is the only software component of the system visible to users.
+                            In a networked setup, the GUI can be invoked on any device with an internet browser
+                            (e.g. PC, smart phone, RPi). For standalone installations, we have added a 7-inch
+                            touch screen to the RPi and installed it on the SPOT* box. The user can access the GUI
+                            directly from the box.
+                        </li>
+                    </ul>
                 </div>
             </section>
-
-            <section id="design-hardware" class="about-section">
-                <div class="row">
-                    <h4>Hardware</h4>
-                </div>
-            </section>
-
-            <section id="design-software" class="about-section">
-                <div class="row">
-                    <h4>Software</h4>
-                </div>
-            </section>
-
             <section id="setup-modes" class="about-section">
                 <div class="row">
                     <h2>Setup Modes</h2>
@@ -196,6 +265,12 @@
                         All software components of SPOT* are maintained in a git repository.
                         Please refer to <a href="https://github.com/AlimoRabbani/SPOTstar">this repository</a> on github for the source code and documentation.
                     </p>
+                    <ul>
+                        <li>The device app: <a href="https://github.com/AlimoRabbani/SPOTstar/tree/master/device">https://github.com/AlimoRabbani/SPOTstar/tree/master/device</a></li>
+                        <li>The control app: <a href="https://github.com/AlimoRabbani/SPOTstar/tree/master/control">https://github.com/AlimoRabbani/SPOTstar/tree/master/control</a></li>
+                        <li>The db app: <a href="https://github.com/AlimoRabbani/SPOTstar/tree/master/db">https://github.com/AlimoRabbani/SPOTstar/tree/master/db</a></li>
+                        <li>The web app: <a href="https://github.com/AlimoRabbani/SPOTstar/tree/master/web">https://github.com/AlimoRabbani/SPOTstar/tree/master/web</a></li>
+                    </ul>
                 </div>
             </section>
 
@@ -204,8 +279,9 @@
                     <h4>Hardware</h4>
                     <ul>
                         <li><a href="http://www.raspberrypi.org/products/model-b-plus/">Raspberry Pi Model B+</a>, and <a href="www.edimax.com/en/produce_detail.php?pd_id=347">Edimax EW-7811Un</a> WiFi USB dongle</li>
-                        <li>Actuation circuit schematics and PCB design</li>
-                        <li>Sensing circuit schematics and PCB design</li>
+                        <li>Actuation circuit <a href="{{ url_for('static', filename='files/control_circuit/spotstar_control_schematics_v3.pdf')}}">schematics</a> and <a href="{{ url_for('static', filename='files/control_circuit/spotstar_control_pcb_v3.zip')}}">PCB design</a></li>
+                        <li>Sensing circuit <a href="{{ url_for('static', filename='files/sensing_circuit/spotstar_sensing_schematics_v2.pdf')}}">schematics</a> and <a href="{{ url_for('static', filename='files/sensing_circuit/spotstar_sensing_pcb_v2.zip')}}">PCB design</a></li>
+                        <li>Hardware assembly <a href="{{ url_for('static', filename='files/assembly_images.zip')}}">images</a></li>
                         <li><a href="http://www.hammondmfg.com/dwg5sp.htm">Actuation box enclosure</a> (1598GSGYPBK) and <a href="http://www.hammondmfg.com/dwg9.htm">sensing box enclosure</a> (1551RBK)</li>
                     </ul>
                 </div>
