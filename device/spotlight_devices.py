@@ -42,8 +42,14 @@ class RPi:
     @staticmethod
     def read_temperature():
         while True:
-            data = RPi.bus.read_word_data(int(Config.rpi_config["RPi_ADC_ADDRESS"], 16),
-                                          int(Config.rpi_config["RPi_TMP_CMD"], 16))
+            try:
+                data = RPi.bus.read_word_data(int(Config.rpi_config["RPi_ADC_ADDRESS"], 16),
+                                              int(Config.rpi_config["RPi_TMP_CMD"], 16))
+            except Exception, e:
+                Config.logger.warning("Error Accessing ADC...")
+                Config.logger.error(e)
+                time.sleep(Config.rpi_config["temperature_reading_resolution"])
+                continue
             data = RPi.reverse_byte_order(data) & 0x0fff
             temperature = (((data/4096.00)*5)-1.375)*1000/22.5
             Config.logger.info("[Temperature][%s]" % str(temperature))
@@ -58,10 +64,14 @@ class RPi:
         sum_of_squares = sum_of_motion = counter = 0
         while True:
             start_time = time.time()
-            current_status = not current_status
-            GPIO.output(Config.rpi_config["RPi_STATUS_PIN"], current_status)
-            data = RPi.bus.read_word_data(int(Config.rpi_config["RPi_ADC_ADDRESS"], 16),
-                                          int(Config.rpi_config["RPi_MOTION_CMD"], 16))
+            try:
+                data = RPi.bus.read_word_data(int(Config.rpi_config["RPi_ADC_ADDRESS"], 16),
+                                              int(Config.rpi_config["RPi_MOTION_CMD"], 16))
+            except Exception, e:
+                Config.logger.warning("Error Accessing ADC...")
+                Config.logger.error(e)
+                time.sleep(Config.rpi_config["motion_reading_resolution"])
+                continue
             raw_motion = (RPi.reverse_byte_order(data) & 0x0fff) / 4.096
             Config.logger.debug("[Motion][%s][%s]" % (str(raw_motion), format(data, '02x')))
             counter += 1
@@ -74,6 +84,10 @@ class RPi:
                 motion_update_thread.daemon = True
                 motion_update_thread.start()
                 sum_of_squares = sum_of_motion = counter = 0
+
+            current_status = not current_status
+            GPIO.output(Config.rpi_config["RPi_STATUS_PIN"], current_status)
+
             end_time = time.time()
             time_difference = (end_time - start_time + 0.0008) \
                 if (end_time - start_time + 0.0008) < Config.rpi_config["motion_reading_resolution"] \
