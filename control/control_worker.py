@@ -6,6 +6,7 @@ import rpyc
 from rpyc.utils.server import ThreadedServer
 import threading
 import esky
+import sys
 
 from reactive_control import ReactiveControl
 from config import Config
