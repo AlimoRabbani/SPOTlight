@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import sys
-
+import logging.handlers
 
 class Config:
     control_config = dict()
@@ -28,7 +28,7 @@ class Config:
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler(Config.log_path + 'control.log')
+        file_handler = logging.handlers.RotatingFileHandler(Config.log_path + 'control.log', maxBytes=20000000, backupCount=5)
         file_handler.setLevel(logging.INFO)
 
         console_handler = logging.StreamHandler()
@@ -44,7 +44,7 @@ class Config:
         service_logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.FileHandler(Config.log_path + 'control_services.log')
+        file_handler = logging.handlers.RotatingFileHandler(Config.log_path + 'control_services.log', maxBytes=20000000, backupCount=5)
         file_handler.setLevel(logging.INFO)
 
         file_handler.setFormatter(formatter)
