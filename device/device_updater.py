@@ -42,7 +42,8 @@ class Updater:
                     app_exe = esky.util.appexe_from_executable(sys.executable)
                     os.execv(app_exe, [app_exe] + sys.argv[1:])
             except Exception, e:
-                Config.logger.warn("Error updating app:", e)
+                Config.logger.warn("Error updating app")
+                Config.logger.error(e)
             app.cleanup()
         scheduler.enter(int(Config.update_config["update_interval"]), 1, Updater.auto_update, (scheduler, ))
 
