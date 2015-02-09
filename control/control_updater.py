@@ -38,7 +38,6 @@ class Updater:
             try:
                 if app.find_update() is not None:
                     app.auto_update(callback=Updater.update_callback)
-                    os.fsync()
                     app_exe = esky.util.appexe_from_executable(sys.executable)
                     os.execv(app_exe, [app_exe] + sys.argv[1:])
             except Exception, e:
