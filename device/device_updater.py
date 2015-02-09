@@ -49,4 +49,4 @@ class Updater:
 
     @staticmethod
     def update_callback(update_dict):
-        Config.logger.info(update_dict["status"])
+        Config.logger.info(str(update_dict["status"]))
