@@ -12,7 +12,7 @@ class Config:
     update_config = dict()
     logger = logging.getLogger("SPOTlight RPi")
     service_logger = logging.getLogger("SPOTlight Device Services")
-    resource_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/"
+    resource_path = "/home/pi/device_config/"
     log_path = "/var/log/SPOTlight/"
 
     def __init__(self):
