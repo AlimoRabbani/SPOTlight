@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+import logging.handlers
 
 class Config:
     rpi_config = dict()
