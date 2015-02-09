@@ -99,8 +99,8 @@ if __name__ == "__main__":
                                   (Config.service_config["db_service_address"],
                                    Config.service_config["db_service_port"]))
             Config.logger.error(e)
-        else:
-            Config.logger.info("SPOTlight device worker started...")
+    else:
+        Config.logger.info("SPOTlight device worker started...")
     Updater.start()
     server = ThreadedServer(DeviceService, hostname=Config.service_config["device_service_address"],
                             port=Config.service_config["device_service_port"], logger=Config.service_logger,

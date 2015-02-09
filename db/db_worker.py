@@ -21,6 +21,15 @@ class DBService(rpyc.Service):
         spotlight_collection.update({"device_id": device_id}, {"$set": {"device_app_version": version}})
         client.close()
 
+    @staticmethod
+    def exposed_update_control_app_version(device_id, version):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        spotlight_collection = collection.Collection(client.spotlight, "Devices")
+        Config.logger.info("update control app version for %s: %s" % (device_id, version))
+        spotlight_collection.update({"device_id": device_id}, {"$set": {"control_app_version": version}})
+        client.close()
+
     # region CONTROL_APP
     @staticmethod
     def exposed_update_control_app_version(device_id, version):

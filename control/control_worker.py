@@ -5,6 +5,7 @@ __author__ = 'Alimohammad'
 import rpyc
 from rpyc.utils.server import ThreadedServer
 import threading
+import esky
 
 from reactive_control import ReactiveControl
 from config import Config
@@ -26,7 +27,30 @@ class DecisionService(rpyc.Service):
 
 if __name__ == "__main__":
     Config.initialize()
-    Config.logger.info("SPOTlight control worker started...")
+    Config.initialize()
+    if hasattr(sys, "frozen"):
+        app = esky.Esky(sys.executable, Config.update_config["update_url"])
+        Config.logger.info("SPOTlight control worker %s started..." % app.active_version)
+        app.cleanup()
+        try:
+            control_conn = rpyc.connect(Config.service_config["db_service_address"],
+                                        Config.service_config["db_service_port"])
+            try:
+                control_conn.root.update_control_app_version(Config.service_config["device_id"], app.active_version)
+                control_conn.close()
+            except Exception, e:
+                Config.logger.warning("Error sending version to %s:%s" %
+                                      (Config.service_config["db_service_address"],
+                                       Config.service_config["db_service_port"]))
+                Config.logger.error(e)
+                control_conn.close()
+        except Exception, e:
+            Config.logger.warning("Error connecting to %s:%s" %
+                                  (Config.service_config["db_service_address"],
+                                   Config.service_config["db_service_port"]))
+            Config.logger.error(e)
+    else:
+        Config.logger.info("SPOTlight control worker started...")
     Updater.start()
     server = ThreadedServer(DecisionService, hostname=Config.service_config["control_service_address"],
                             port=Config.service_config["control_service_port"], logger=Config.service_logger,
