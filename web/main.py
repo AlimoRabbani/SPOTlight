@@ -18,10 +18,6 @@ app.register_blueprint(user_views)
 app.register_blueprint(admin_views)
 app.config["custom_config"] = json.loads(open("config.json").read())
 
-file_handler = logging.FileHandler(app.config["custom_config"]["log_path"] + 'spotstar_web.log')
-file_handler.setLevel(logging.DEBUG)
-app.logger.addHandler(file_handler)
-
 app.secret_key = app.config["custom_config"]["secret_key"]
 
 login_manager = LoginManager()
