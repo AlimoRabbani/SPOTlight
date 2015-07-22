@@ -219,6 +219,11 @@ class DBService(rpyc.Service):
     def exposed_update_offset(device_id, new_offset):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        offset_collection = collection.Collection(client.spotlight, "Offsets")
+        now_time = datetime.datetime.utcnow()
+        document = {"timestamp": now_time, "device_id": device_id, "offset": new_offset}
+        offset_collection.insert(document)
+
         device_collection = collection.Collection(client.spotlight, "Devices")
         result = device_collection.update({"device_id": device_id}, {"$set": {"device_parameter_offset": new_offset}})
         Config.logger.info("updated offset for device '%s'" % str(device_id))
