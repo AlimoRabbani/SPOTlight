@@ -24,7 +24,7 @@ class Config:
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        file_handler = logging.handlers.RotatingFileHandler('db.log', maxBytes=20000000, backupCount=5)
+        file_handler = logging.handlers.RotatingFileHandler('db.log', maxBytes=200000000, backupCount=100)
         file_handler.setLevel(logging.INFO)
 
         console_handler = logging.StreamHandler()
