@@ -14,14 +14,14 @@ def main():
     db = client.spotlight
     db_all = client.spotlight_all
 
-    bulk_insert = db_all.Temperatures.initialize_ordered_bulk_op()
     bulk_remove = db.Temperatures.initialize_ordered_bulk_op()
 
     one_month_ago = datetime.datetime.utcnow() + datetime.timedelta(weeks=-4)
-    bulk_insert.insert_many(db.Temperatures.find({"timestamp": {"$lte" : one_month_ago}}))
+    result = db_all.Temperatures.insert_many(db.Temperatures.find({"timestamp": {"$lte" : one_month_ago}}))
+
     bulk_remove.find({"timestamp": {"$lte" : one_month_ago}}).remove()
 
-    if bulk_insert.execute():
+    if result:
         bulk_remove.execute()
 
     client.close()
