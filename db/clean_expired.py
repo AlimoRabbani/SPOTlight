@@ -27,4 +27,6 @@ def main():
     client.close()
 
 if __name__ == "__main__":
+    Config.initialize()
+    Config.logger.info("SPOTlight db manager started...")
     main()
