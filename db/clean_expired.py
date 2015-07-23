@@ -17,7 +17,7 @@ def main():
     bulk_insert = db_all.Temperatures.initialize_ordered_bulk_op()
     bulk_remove = db.Temperatures.initialize_ordered_bulk_op()
 
-    one_month_ago = datetime.datetime.utcnow() + datetime.timedelta(months=-1)
+    one_month_ago = datetime.datetime.utcnow() + datetime.timedelta(weeks=-4)
     for temperature in db.Temperatures.find({"timestamp": {"$lte" : one_month_ago}}):
         bulk_insert.insert(temperature)
         bulk_remove.remove(temperature)
