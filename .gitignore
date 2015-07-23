@@ -24,3 +24,5 @@ db/dist/*
 control/build/*
 control/dist/*
 spot_setup.py
+
+change_password.py

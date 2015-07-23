@@ -15,7 +15,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_update_device_app_version(device_id, version):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         spotlight_collection = collection.Collection(client.spotlight, "Devices")
         Config.logger.info("update device app version for %s: %s" % (device_id, version))
         spotlight_collection.update({"device_id": device_id}, {"$set": {"device_app_version": version}})
@@ -24,7 +24,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_update_control_app_version(device_id, version):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         spotlight_collection = collection.Collection(client.spotlight, "Devices")
         Config.logger.info("update control app version for %s: %s" % (device_id, version))
         spotlight_collection.update({"device_id": device_id}, {"$set": {"control_app_version": version}})
@@ -34,7 +34,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_update_control_app_version(device_id, version):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         spotlight_collection = collection.Collection(client.spotlight, "Devices")
         Config.logger.info("update control app version for %s: %s" % (device_id, version))
         spotlight_collection.update({"device_id": device_id}, {"$set": {"control_app_version": version}})
@@ -42,7 +42,7 @@ class DBService(rpyc.Service):
 
     def exposed_insert_temperature(self, temperature, device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         spotlight_collection = collection.Collection(client.spotlight, "Temperatures")
         now_time = datetime.datetime.utcnow()
         document = {"timestamp": now_time, "device_id": device_id, "temperature": float(temperature)}
@@ -59,7 +59,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_insert_motion(motion, device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         spotlight_collection = collection.Collection(client.spotlight, "Motions")
         document = {"timestamp": datetime.datetime.utcnow(), "device_id": device_id, "std": float(motion)}
         Config.logger.info("insert motion_std:%s" % str(motion))
@@ -69,7 +69,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_insert_occupancy(occupancy, device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         spotlight_collection = collection.Collection(client.spotlight, "Occupancies")
         document = {"timestamp": datetime.datetime.utcnow(), "device_id": device_id, "occupancy": int(occupancy)}
         Config.logger.info("insert occupancy:%s" % str(occupancy))
@@ -79,7 +79,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_insert_state(heat_state, cool_state, fan_speed, device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         spotlight_collection = collection.Collection(client.spotlight, "States")
         document = {"timestamp": datetime.datetime.utcnow(), "device_id": device_id, "heat": heat_state,
                     "cool": cool_state, "speed": fan_speed}
@@ -91,7 +91,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_insert_ppv(pmv, ppv, device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         ppv_collection = collection.Collection(client.spotlight, "PPVs")
         document = {"timestamp": datetime.datetime.utcnow(), "device_id": device_id, "pmv": pmv, "ppv": ppv}
         Config.logger.info("insert pmv:%s ppv:%s" % (str(pmv), str(ppv)))
@@ -101,7 +101,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_ppv_parameters(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         device_collection = collection.Collection(client.spotlight, "Devices")
         device = device_collection.find_one({"device_id": device_id})
         Config.logger.info("fetched %s" % str(device))
@@ -113,7 +113,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_user_by_email(email):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         user_collection = collection.Collection(client.spotlight, "Users")
         user = user_collection.find_one({"email": email})
         Config.logger.info("fetched user info for '%s'" % str(email))
@@ -123,7 +123,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_user_by_user_id(user_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         user_collection = collection.Collection(client.spotlight, "Users")
         user = user_collection.find_one({"user_id": user_id})
         Config.logger.info("fetched user info for '%s'" % str(user_id))
@@ -133,7 +133,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_device(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         device_collection = collection.Collection(client.spotlight, "Devices")
         device = device_collection.find_one({"device_id": device_id})
         Config.logger.info("fetched %s" % str(device))
@@ -143,7 +143,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_devices(user_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         device_collection = collection.Collection(client.spotlight, "Devices")
         devices = list(device_collection.find({"user_id": user_id}))
         Config.logger.info("fetched %d devices for user '%s'" % (len(devices), str(user_id)))
@@ -153,7 +153,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_all_devices():
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         device_collection = collection.Collection(client.spotlight, "Devices")
         devices = list(device_collection.find())
         Config.logger.info("fetched %d all devices" % len(devices))
@@ -163,7 +163,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_training(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         training_collection = collection.Collection(client.spotlight, "Training")
         training = training_collection.find_one({"device_id": device_id})
         Config.logger.info("fetched training %s for device '%s'" % (str(training), str(device_id)))
@@ -173,7 +173,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_start_training(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         training_collection = collection.Collection(client.spotlight, "Training")
         result = training_collection.insert({"device_id": device_id, "start_time": datetime.datetime.utcnow()})
         Config.logger.info("inserted training for device '%s'" % str(device_id))
@@ -186,7 +186,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_end_training(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
 
         training_collection = collection.Collection(client.spotlight, "Training")
         training_collection.remove({"device_id": device_id})
@@ -201,7 +201,7 @@ class DBService(rpyc.Service):
                 pmv_list.append(vote["pmv"])
                 vote_list.append(vote["vote"])
             line_regress = stats.linregress(pmv_list, vote_list)
-            slope = line_regress[0]
+            slope = min(max(line_regress[0], 0.5), 3.0)
             intercept = line_regress[1]
             if (not math.isnan(slope)) and (not math.isnan(intercept)):
                 device_collection = collection.Collection(client.spotlight, "Devices")
@@ -218,7 +218,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_update_offset(device_id, new_offset):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         offset_collection = collection.Collection(client.spotlight, "Offsets")
         now_time = datetime.datetime.utcnow()
         document = {"timestamp": now_time, "device_id": device_id, "offset": new_offset}
@@ -236,7 +236,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_pmv_ppv_list(device_id, start_date):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         ppv_collection = collection.Collection(client.spotlight, "PPVs")
         pmv_ppv_list = list(ppv_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
         Config.logger.info("fetched (pmv,ppv) for device '%s' from %s" %
@@ -248,7 +248,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_last_pmv_ppv(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         ppv_collection = collection.Collection(client.spotlight, "PPVs")
         pmv_ppv_list = list(ppv_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
         Config.logger.info("fetched last (pmv,ppv) for device '%s'" % str(device_id))
@@ -258,7 +258,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_temperature_list(device_id, start_date):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         temperature_collection = collection.Collection(client.spotlight, "Temperatures")
         temperature_list = list(temperature_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
         Config.logger.info("fetched temperatures for device '%s' from %s" %
@@ -270,7 +270,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_last_temperature(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         temperature_collection = collection.Collection(client.spotlight, "Temperatures")
         temperature_list = list(temperature_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
         Config.logger.info("fetched last temperature for device '%s'" % str(device_id))
@@ -280,7 +280,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_occupancy_list(device_id, start_date):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         occupancy_collection = collection.Collection(client.spotlight, "Occupancies")
         occupancy_list = list(occupancy_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
         Config.logger.info("fetched occupancies for device:'%s' from %s" %
@@ -305,7 +305,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_last_occupancy(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         occupancy_collection = collection.Collection(client.spotlight, "Occupancies")
         occupancy_list = list(occupancy_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
         Config.logger.info("fetched last occupancy for device '%s'" % str(device_id))
@@ -315,7 +315,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_motion_list(device_id, start_date):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         motion_collection = collection.Collection(client.spotlight, "Motions")
         motion_list = list(motion_collection.find({"device_id": device_id, "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
         Config.logger.info("fetched motions for device '%s' from %s" %
@@ -340,7 +340,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_insert_vote(device_id, vote):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
 
         training_collection = collection.Collection(client.spotlight, "Training")
         training = training_collection.find_one({"device_id": device_id})
@@ -368,7 +368,7 @@ class DBService(rpyc.Service):
     @staticmethod
     def exposed_get_last_temperature_update(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
-        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='admin')
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
         temperature_collection = collection.Collection(client.spotlight, "Temperatures")
         temperature_list = list(temperature_collection.find({"device_id": device_id}).sort("timestamp", -1).limit(1))
         Config.logger.info("fetched latest temperature update for device '%s'" % str(device_id))
