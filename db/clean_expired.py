@@ -19,7 +19,7 @@ def clean_temperatures():
     print "found " + str(db.Temperatures.find({"timestamp": {"$lte": one_week_ago}}).count()) + " expired items"
 
     print "inserting expired items into backup database..."
-    result = db_all.Temperatures.insert_many(db.Temperatures.find({"timestamp": {"$lte": one_week_ago}}))
+    result = db_all.Temperatures.insert_many(list(db.Temperatures.find({"timestamp": {"$lte": one_week_ago}})))
 
     bulk_remove.find({"timestamp": {"$lte": one_week_ago}}).remove()
     if result:
@@ -42,7 +42,7 @@ def clean_states():
     print "found " + str(db.States.find({"timestamp": {"$lte": one_week_ago}}).count()) + " expired items"
 
     print "inserting expired items into backup database..."
-    result = db_all.States.insert_many(db.States.find({"timestamp": {"$lte": one_week_ago}}))
+    result = db_all.States.insert_many(list(db.States.find({"timestamp": {"$lte": one_week_ago}})))
 
     bulk_remove.find({"timestamp": {"$lte": one_week_ago}}).remove()
     if result:
@@ -65,7 +65,7 @@ def clean_occupancies():
     print "found " + str(db.Occupancies.find({"timestamp": {"$lte": one_week_ago}}).count()) + " expired items"
 
     print "inserting expired items into backup database..."
-    result = db_all.Occupancies.insert_many(db.Occupancies.find({"timestamp": {"$lte": one_week_ago}}))
+    result = db_all.Occupancies.insert_many(list(db.Occupancies.find({"timestamp": {"$lte": one_week_ago}})))
 
     bulk_remove.find({"timestamp": {"$lte": one_week_ago}}).remove()
     if result:
@@ -88,7 +88,7 @@ def clean_ppvs():
     print "found " + str(db.PPVs.find({"timestamp": {"$lte": one_week_ago}}).count()) + " expired items"
 
     print "inserting expired items into backup database..."
-    result = db_all.PPVs.insert_many(db.PPVs.find({"timestamp": {"$lte": one_week_ago}}))
+    result = db_all.PPVs.insert_many(list(db.PPVs.find({"timestamp": {"$lte": one_week_ago}})))
 
     bulk_remove.find({"timestamp": {"$lte": one_week_ago}}).remove()
     if result:
@@ -111,7 +111,7 @@ def clean_motions():
     print "found " + str(db.Motions.find({"timestamp": {"$lte": one_week_ago}}).count()) + " expired items"
 
     print "inserting expired items into backup database..."
-    result = db_all.Motions.insert_many(db.Motions.find({"timestamp": {"$lte": one_week_ago}}))
+    result = db_all.Motions.insert_many(list(db.Motions.find({"timestamp": {"$lte": one_week_ago}})))
 
     bulk_remove.find({"timestamp": {"$lte": one_week_ago}}).remove()
     if result:
