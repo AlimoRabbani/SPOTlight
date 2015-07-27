@@ -8,7 +8,6 @@ from pymongo import MongoClient
 from pymongo import collection
 
 from config import Config
-from db_updater import Updater
 
 
 class DBService(rpyc.Service):
@@ -382,11 +381,10 @@ class DBService(rpyc.Service):
 
 if __name__ == "__main__":
     Config.initialize()
-    Config.logger.info("SPOTlight db manager started...")
-    Updater.start()
+    Config.logger.info("SPOTstar db manager started...")
     server = ThreadedServer(DBService, hostname=Config.service_config["db_service_address"],
                             port=Config.service_config["db_service_port"], logger=Config.service_logger,
                             authenticator=None, protocol_config={"allow_pickle": True})
     server.start()
     #device manager will block on this line to listen for incoming RPC requests
-    Config.logger.info("SPOTlight device manager shutting down...")
+    Config.logger.info("SPOTstar device manager shutting down...")

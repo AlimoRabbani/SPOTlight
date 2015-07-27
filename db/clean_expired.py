@@ -132,5 +132,5 @@ def main():
 
 if __name__ == "__main__":
     Config.initialize()
-    Config.logger.info("SPOTlight db manager started...")
+    Config.logger.info("SPOTstar db cleaner started...")
     main()

@@ -7,7 +7,6 @@ import logging.handlers
 class Config:
     db_config = dict()
     service_config = dict()
-    update_config = dict()
     logger = logging.getLogger("SPOTlight DB")
     service_logger = logging.getLogger("SPOTlight DB Services")
 
@@ -18,7 +17,6 @@ class Config:
     def initialize():
         Config.service_config = json.loads(open("config_service.json").read())
         Config.db_config = json.loads(open("config_db.json").read())
-        Config.update_config = json.loads(open("config_update.json").read())
 
         logger = logging.getLogger("SPOTlight DB")
         logger.setLevel(logging.DEBUG)
