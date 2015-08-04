@@ -16,13 +16,14 @@ $(document).ready(function(){
         </div>
     </div>
     {% for device in devices %}
-    <div class="col-lg-2 col-md-2 col-sm-3 col-xs-3">
+    <div class="col-lg-2 col-md-2 col-sm-3 col-xs-4">
             <a href="{{ url_for('admin_views.device_view', device_id=device.device_id) }}"
                class="thumbnail{% if not device.is_alive %} admin-thumbnail-danger{% elif device.is_overheating %} admin-thumbnail-warning{% endif %}"
                style="text-decoration: none !important; color: black;" data-toggle="tooltip" data-placement="top"
                title="{% if not device.is_alive %}Device Lost!{% elif device.is_overheating %}Overheating!{% endif %}">
                     <div class="text-center">
                         <h4>{{ device.device_location }}</h4>
+                        <h5>{{ device.get_owner().name }}</h5>
                     </div>
             </a>
     </div>
