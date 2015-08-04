@@ -40,7 +40,7 @@ $(document).ready(function() {
         .fail(function() {
             alert("network fail");
         });
-        comfort_realtime_updater = setTimeout(function() {update_comfort_realtime_graph();}, 1000);
+        comfort_realtime_updater = setTimeout(function() {update_comfort_realtime_graph();}, 30000);
     }
     function initialize_comfort_graph(timePeriod) {
         $.get( "{{ url_for('user_views.device_get_pmv_ppv_list', device_id=device.device_id) }}", {time_interval: timePeriod})
@@ -69,7 +69,7 @@ $(document).ready(function() {
                 series: [{type: 'line', color: '#D62929', name: 'Standard', data: pmvData}, {type: 'line', name: 'Personalized', color: '#19D11C', data: ppvData}]
             });
             if (timePeriod == "Now") {
-	    	    comfort_realtime_updater = setTimeout(function() {update_comfort_realtime_graph();}, 1000);
+	    	    comfort_realtime_updater = setTimeout(function() {update_comfort_realtime_graph();}, 30000);
             }
         })
         .fail(function() {

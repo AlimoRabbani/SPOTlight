@@ -46,7 +46,7 @@ $(document).ready(function() {
         .fail(function() {
             alert("network fail");
         });
-        occupancy_realtime_updater = setTimeout(function() {update_occupancy_realtime_graph();}, 1000);
+        occupancy_realtime_updater = setTimeout(function() {update_occupancy_realtime_graph();}, 30000);
     }
 
     function initialize_occupancy_graph(timePeriod) {
@@ -74,7 +74,7 @@ $(document).ready(function() {
                     {type: 'line', name: 'Temperature', color: '#A437CC', data: temperatureData, tooltip: {valueDecimals: 2}}]
             });
             if (timePeriod == "Now") {
-	    	    occupancy_realtime_updater = setTimeout(function() {update_occupancy_realtime_graph();}, 1000);
+	    	    occupancy_realtime_updater = setTimeout(function() {update_occupancy_realtime_graph();}, 30000);
             }
         })
         .fail(function() {
