@@ -10,8 +10,9 @@
                     In this equation, PMV is <a href="http://en.wikipedia.org/wiki/Thermal_comfort">Predicted Mean Vote</a> and is calculated based on
                     temperature, humidity, air velocity, metabolic rate, and attire. Since we are not
                     measuring some of these parameters, we assume fixed values for them and adjust the function
-                    using <strong>"a"</strong> and <strong>"b"</strong> coefficients and calculate PPV. Currently, <strong>a = {{ device.device_parameter_a }}</strong> and
-                    <strong>b = {{ device.device_parameter_b }}</strong> for your device.
+                    using <strong>"a"</strong> and <strong>"b"</strong> coefficients and calculate PPV. Currently,
+                    <strong>a = {{ device.device_parameter_a|round(2, 'floor') }}</strong> and
+                    <strong>b = {{ device.device_parameter_b|round(2, 'floor') }}</strong> for your device.
                     If you think that your device is not calibrated, hit the train button below and you will
                     have 24 hours to vote and train it.
                 </div>
