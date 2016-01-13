@@ -158,10 +158,6 @@ class Device:
             device_list.append(device)
         return device_list
 
-    def get_owner(self):
-        user = User.get(user_id=self.device_owner)
-        return user
-
     @staticmethod
     def find_all_devices():
         devices = None

@@ -1,7 +1,7 @@
 __author__ = 'Alimohammad'
 from flask import request, render_template, abort, url_for, redirect
 from flask_login import login_required, current_user
-from data_model import Device
+from data_model import Device, User
 from functools import wraps
 from flask import Blueprint
 
@@ -40,11 +40,7 @@ def devices_view():
 def device_view(device_id):
     device = current_user.get_device(device_id)
     if device is not None:
-        pmv_ppv_list = device.get_pmv_ppv_list(datetime.datetime.utcnow() + datetime.timedelta(days=-1))
-        occupancy_temperature_list = device.get_occupancy_temperature_list(datetime.datetime.utcnow() +
-                                                                           datetime.timedelta(days=-1))
-        owner = device.get_owner()
-        return render_template("admin/admin_device.html", device=device, pmv_ppv_list=pmv_ppv_list,
-                               occupancy_temperature_list=occupancy_temperature_list, device_owner=owner)
+        device_owner = User.get(user_id=device.device_owner)
+        return render_template("admin/admin_device.html", device=device, device_owner=device_owner)
     else:
         abort(403)

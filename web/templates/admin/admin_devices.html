@@ -23,7 +23,7 @@ $(document).ready(function(){
                title="{% if not device.is_alive %}Device Lost!{% elif device.is_overheating %}Overheating!{% endif %}">
                     <div class="text-center">
                         <h4>{{ device.device_location }}</h4>
-                        <h5>{{ device.get_owner().name }}</h5>
+                        <h5>{{ device.device_owner }}</h5>
                     </div>
             </a>
     </div>
