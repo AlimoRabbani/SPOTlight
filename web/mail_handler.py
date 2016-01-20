@@ -8,7 +8,7 @@ class Mail:
         self.link = link
 
     def send(self):
-        msg = "Hi,\nYou requested to change the password for your SPOT* account. " \
+        msg = "Hi,\n\nYou requested to change the password for your SPOT* account. " \
               "Please click on the link below to choose a new password. If you did " \
               "not trigger the change, you can ignore this message\n\n"
         msg += self.link

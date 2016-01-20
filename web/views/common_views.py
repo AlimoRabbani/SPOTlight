@@ -74,6 +74,7 @@ def forgot_password():
                     current_app.logger.info(link)
                     mail = mail_handler.Mail(user.email, link)
                     mail.send()
+                    return redirect(url_for("common_views.index"))
             else:
                 error = "A user with this email does not exist!"
         else:
