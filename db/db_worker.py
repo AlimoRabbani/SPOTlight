@@ -130,6 +130,29 @@ class DBService(rpyc.Service):
         return user
 
     @staticmethod
+    def exposed_update_forgot_password_secret(email, secret):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
+        user_collection = collection.Collection(client.spotlight, "Users")
+        result = user_collection.update({"email": email}, {"$set": {"forgot_secret": secret}})
+        Config.logger.info("created forgot password secret for '%s'" % str(email))
+        client.close()
+        if result:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def exposed_change_password(user_id, password, salt):
+        client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
+        client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')
+        user_collection = collection.Collection(client.spotlight, "Users")
+        user_collection.update({"user_id": user_id}, {"$set": {"password": password, "password_salt": salt}})
+        user_collection.update({"user_id": user_id}, {"$unset": {"forgot_secret": ""}})
+        Config.logger.info("Password successfully updated for '%s'" % str(user_id))
+        client.close()
+
+    @staticmethod
     def exposed_get_device(device_id):
         client = MongoClient(host=Config.db_config["mongo_server"], port=Config.db_config["mongo_port"])
         client.the_database.authenticate(Config.db_config["mongo_user"], Config.db_config["mongo_password"], source='spotlight')

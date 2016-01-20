@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Forgot Passowrd{% endblock %}
+{% block content %}
+{% from "_formhelpers.html" import render_login_text %}
+{% from "_formhelpers.html" import render_login_check %}
+{% from "_formhelpers.html" import render_recaptcha %}
+{% if error %}
+<div class="alert alert-danger text-center">
+    {{ error }}
+</div>
+{% endif %}
+<div class="container">
+<script src='https://www.google.com/recaptcha/api.js'></script>
+    <div class="col-md-4 col-sm-5 col-md-offset-4 col-sm-offset-4">
+        <div class="row" style="padding-top:30px; padding-bottom:25px;">
+            <h3>Forgot your password?</h3>
+            That's okay! Enter your UWaterloo email address and we will send you a link to reset the password.
+        </div>
+        <div class="row">
+            <form role="form" method=post action="{{ url_for('common_views.forgot_password') }}">
+                {{ render_login_text(forgot_form.email) }}
+                {{ render_recaptcha() }}
+                <button type="submit" class="btn btn-default pull-right" style="margin-top:10px; margin-bottom:20px;">Submit</button>
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

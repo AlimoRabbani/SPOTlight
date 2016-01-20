@@ -6,6 +6,10 @@ import datetime
 import rpyc
 import pickle
 from dateutil import tz
+import random
+import string
+import hashlib
+import uuid
 
 class User:
     def __init__(self, user_dict):
@@ -16,6 +20,8 @@ class User:
         self.password_salt = user_dict["password_salt"]
         self.phone = user_dict["phone"]
         self.role = user_dict["role"]
+        if "forgot_secret" in user_dict:
+            self.forgot_secret = user_dict["forgot_secret"]
         self.authenticated = False
         self.active = True
         self.anonymous = False
@@ -72,6 +78,56 @@ class User:
 
     def find_devices(self):
         return Device.find_devices(self.user_id)
+
+    def forgot_password(self):
+        success = False
+        secret = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(20))
+        try:
+            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
+                                   current_app.config["custom_config"]["db_service_port"],
+                                   config={"allow_pickle": True})
+            try:
+                success = db_conn.root.update_forgot_password_secret(self.email, secret)
+                db_conn.close()
+            except Exception, e:
+                current_app.logger.warn("There was a problem reading from db")
+                current_app.logger.error(e)
+                db_conn.close()
+        except Exception, e:
+            current_app.logger.warning("There was a problem connecting to db")
+            current_app.logger.error(e)
+        if success:
+            self.forgot_secret = secret
+        return success
+
+    @staticmethod
+    def validate_reset_secret(user_id, secret):
+        user = User.get(user_id=user_id)
+        try:
+            if user.forgot_secret == secret:
+                return True
+        except:
+            pass
+        return False
+
+    @staticmethod
+    def change_password(user_id, new_password):
+        salt = uuid.uuid4().hex
+        hashed_password = hashlib.sha512(new_password + salt).hexdigest()
+        try:
+            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
+                                   current_app.config["custom_config"]["db_service_port"],
+                                   config={"allow_pickle": True})
+            try:
+                db_conn.root.change_password(user_id, hashed_password, salt)
+                db_conn.close()
+            except Exception, e:
+                current_app.logger.warn("There was a problem reading from db")
+                current_app.logger.error(e)
+                db_conn.close()
+        except Exception, e:
+            current_app.logger.warning("There was a problem connecting to db")
+            current_app.logger.error(e)
 
     def authenticate(self, password):
         hashed_password = hashlib.sha512(password + self.password_salt).hexdigest()
