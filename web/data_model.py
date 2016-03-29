@@ -443,7 +443,6 @@ class Device:
             occupancy_list =\
                 list(occupancy_collection.find({"device_id": self.device_id}).sort("timestamp", -1).limit(1))
             client.close()
-            return temperature_list
         except Exception, e:
             handle_db_error(client, e)
         temperature_modified_list = list()
