@@ -9,6 +9,7 @@ SPOTlight_key.private
 *.log
 
 spotlightVenv/*
+web/spotstarVenv/*
 
 web/insert_to_db.py
 

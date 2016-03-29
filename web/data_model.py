@@ -3,13 +3,31 @@ __author__ = 'Alimohammad'
 from flask import current_app
 import hashlib
 import datetime
-import rpyc
-import pickle
 from dateutil import tz
 import random
 import string
 import hashlib
 import uuid
+from pymongo import MongoClient
+from pymongo import collection
+import math
+from scipy import stats
+
+def connect_to_db():
+    client = MongoClient(host=current_app.config["custom_config"]["db_address"],
+                         port=current_app.config["custom_config"]["db_port"])
+    client.the_database.authenticate(current_app.config["custom_config"]["db_user"],
+                                     current_app.config["custom_config"]["db_password"],
+                                     source=current_app.config["custom_config"]["db_auth_source"])
+    return client
+
+
+def handle_db_error(client, e):
+    current_app.logger.warn("There was a problem connecting to db")
+    current_app.logger.error(e)
+    if client:
+        client.close()
+
 
 class User:
     def __init__(self, user_dict):
@@ -29,23 +47,19 @@ class User:
     @staticmethod
     def get(email=None, user_id=None):
         user_dict = None
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True})
-            try:
-                if email:
-                    user_dict = pickle.loads(pickle.dumps(db_conn.root.get_user_by_email(email)))
-                elif user_id:
-                    user_dict = pickle.loads(pickle.dumps(db_conn.root.get_user_by_user_id(user_id)))
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            user_collection = collection.Collection(client.spotlight, "Users")
+            user_dict = None
+            if email:
+                user_dict = user_collection.find_one({"email": email})
+            elif user_id:
+                user_dict = user_collection.find_one({"user_id": user_id})
+
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
 
         if user_dict is not None:
             user = User(user_dict)
@@ -55,20 +69,14 @@ class User:
 
     def get_device(self, device_id):
         device_dict = None
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True})
-            try:
-                device_dict = pickle.loads(pickle.dumps(db_conn.root.get_device(device_id)))
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            device_collection = collection.Collection(client.spotlight, "Devices")
+            device_dict = device_collection.find_one({"device_id": device_id})
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
         device = None
         if device_dict:
             device = Device(device_dict)
@@ -80,25 +88,21 @@ class User:
         return Device.find_devices(self.user_id)
 
     def forgot_password(self):
-        success = False
+        result = None
         secret = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(20))
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True})
-            try:
-                success = db_conn.root.update_forgot_password_secret(self.email, secret)
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            user_collection = collection.Collection(client.spotlight, "Users")
+            result = user_collection.update_one({"email": self.email}, {"$set": {"forgot_secret": secret}})
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
-        if success:
+            handle_db_error(client, e)
+        if result:
             self.forgot_secret = secret
-        return success
+            return True
+        else:
+            return False
 
     @staticmethod
     def validate_reset_secret(user_id, secret):
@@ -106,7 +110,7 @@ class User:
         try:
             if user.forgot_secret == secret:
                 return True
-        except:
+        except Exception:
             pass
         return False
 
@@ -114,20 +118,17 @@ class User:
     def change_password(user_id, new_password):
         salt = uuid.uuid4().hex
         hashed_password = hashlib.sha512(new_password + salt).hexdigest()
+        client = None
+
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True})
-            try:
-                db_conn.root.change_password(user_id, hashed_password, salt)
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            user_collection = collection.Collection(client.spotlight, "Users")
+            user_collection.update_one({"user_id": user_id},
+                                       {"$set": {"password": hashed_password, "password_salt": salt}})
+            user_collection.update_one({"user_id": user_id}, {"$unset": {"forgot_secret": ""}})
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
 
     def authenticate(self, password):
         hashed_password = hashlib.sha512(password + self.password_salt).hexdigest()
@@ -194,20 +195,14 @@ class Device:
     @staticmethod
     def find_devices(user_id):
         devices = None
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True})
-            try:
-                devices = pickle.loads(pickle.dumps(db_conn.root.get_devices(user_id)))
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            device_collection = collection.Collection(client.spotlight, "Devices")
+            devices = list(device_collection.find({"user_id": user_id}))
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
         device_list = list()
         for device_dict in devices:
             device = Device(device_dict)
@@ -217,20 +212,15 @@ class Device:
     @staticmethod
     def find_all_devices():
         devices = None
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True})
-            try:
-                devices = pickle.loads(pickle.dumps(db_conn.root.get_all_devices()))
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            device_collection = collection.Collection(client.spotlight, "Devices")
+            devices = list(device_collection.find())
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
+
         device_list = list()
         for device_dict in devices:
             device = Device(device_dict)
@@ -239,104 +229,127 @@ class Device:
 
     def get_training(self):
         training = None
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True})
-            try:
-                training = pickle.loads(pickle.dumps(db_conn.root.get_training(self.device_id)))
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            training_collection = collection.Collection(client.spotlight, "Training")
+            training = training_collection.find_one({"device_id": self.device_id})
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
         return training
 
     def start_training(self):
-        result = False
+        result = None
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"])
-            try:
-                result = db_conn.root.start_training(self.device_id)
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem inserting to db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            training_collection = collection.Collection(client.spotlight, "Training")
+            result = training_collection.insert_one({"device_id": self.device_id,
+                                                     "start_time": datetime.datetime.utcnow()})
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
-        return result
+            handle_db_error(client, e)
+        if result:
+            return True
+        else:
+            return False
 
     def end_training(self):
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"])
-            try:
-                db_conn.root.end_training(self.device_id)
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem ending training")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            training_collection = collection.Collection(client.spotlight, "Training")
+            training_collection.delete_one({"device_id": self.device_id})
+
+            votes_collection = collection.Collection(client.spotlight, "Votes")
+            votes = list(votes_collection.find({"device_id": self.device_id}))
+
+            if len(votes) > 5:
+                pmv_list = list()
+                vote_list = list()
+                for vote in votes:
+                    pmv_list.append(vote["pmv"])
+                    vote_list.append(vote["vote"])
+                line_regress = stats.linregress(pmv_list, vote_list)
+                slope = min(max(line_regress[0], 0.5), 3.0)
+                intercept = line_regress[1]
+                if (not math.isnan(slope)) and (not math.isnan(intercept)):
+                    device_collection = collection.Collection(client.spotlight, "Devices")
+                    device_collection.update_one({"device_id": self.device_id},
+                                                 {"$set": {"device_parameter_a": slope,
+                                                           "device_parameter_b": intercept}})
+
+            votes_collection = collection.Collection(client.spotlight, "Votes")
+            votes_collection.delete_one({"device_id": self.device_id})
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
 
     def update_offset(self, new_offset):
-        result = False
+        result = None
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"])
-            try:
-                result = db_conn.root.update_offset(self.device_id, new_offset)
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem updating db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            offset_collection = collection.Collection(client.spotlight, "Offsets")
+            now_time = datetime.datetime.utcnow()
+            document = {"timestamp": now_time, "device_id": self.device_id, "offset": new_offset}
+            offset_collection.insert_one(document)
+
+            device_collection = collection.Collection(client.spotlight, "Devices")
+            result = device_collection.update_one({"device_id": self.device_id},
+                                                  {"$set": {"device_parameter_offset": new_offset}})
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
-        return result
+            handle_db_error(client, e)
+        if result:
+            return True
+        else:
+            return False
 
     def submit_vote(self, vote):
-        result = False
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"])
-            try:
-                result = db_conn.root.insert_vote(self.device_id, vote)
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem inserting to db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            training_collection = collection.Collection(client.spotlight, "Training")
+            training = training_collection.find_one({"device_id": self.device_id})
+            if not training:
+                return False
+
+            ppv_collection = collection.Collection(client.spotlight, "PPVs")
+            pmv_ppv_dict = ppv_collection.find({"device_id": self.device_id}).sort("timestamp", -1).limit(1)
+            pmv = pmv_ppv_dict[0]["pmv"]
+
+            votes_collection = collection.Collection(client.spotlight, "Votes")
+            result = votes_collection.insert_one({"device_id": self.device_id, "vote": vote, "pmv": pmv})
+
+            votes_archive_collection = collection.Collection(client.spotlight, "Votes_Archive")
+            votes_archive_collection.insert_one({"device_id": self.device_id,
+                                                 "training_start": training["start_time"],
+                                                 "vote": vote,
+                                                 "pmv": pmv})
+            client.close()
+            if result:
+                return True
+            else:
+                return False
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
-        return result
+            handle_db_error(client, e)
+        return False
 
     def get_pmv_ppv_list(self, start_date):
         pmv_ppv_list = list()
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True, "allow_public_attrs": True})
-            try:
-                pmv_ppv_list = pickle.loads(pickle.dumps(db_conn.root.get_pmv_ppv_list(self.device_id, start_date)))
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            ppv_collection = collection.Collection(client.spotlight, "PPVs")
+            temp_list = list(ppv_collection.find({"device_id": self.device_id,
+                                                  "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
+            client.close()
+            skipper_value = (len(pmv_ppv_list) / 2000) + 1
+            pmv_ppv_list = temp_list[0::skipper_value]
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
         pmv_list = list()
         ppv_list = list()
         for pmv_ppv_item in pmv_ppv_list:
@@ -346,20 +359,14 @@ class Device:
 
     def get_last_pmv_ppv(self):
         pmv_ppv_list = list()
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True, "allow_public_attrs": True})
-            try:
-                pmv_ppv_list = pickle.loads(pickle.dumps(db_conn.root.get_last_pmv_ppv(self.device_id)))
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            ppv_collection = collection.Collection(client.spotlight, "PPVs")
+            pmv_ppv_list = list(ppv_collection.find({"device_id": self.device_id}).sort("timestamp", -1).limit(1))
+            client.close()
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
         pmv_list = list()
         ppv_list = list()
         for pmv_ppv_item in pmv_ppv_list:
@@ -370,24 +377,42 @@ class Device:
     def get_occupancy_temperature_list(self, start_date):
         temperature_list = list()
         occupancy_list = list()
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True, "allow_public_attrs": True})
-            try:
-                temperature_list = pickle.loads(pickle.dumps(db_conn.root.get_temperature_list(self.device_id, start_date)))
-                occupancy_list = pickle.loads(pickle.dumps(db_conn.root.get_occupancy_list(self.device_id, start_date)))
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            temperature_collection = collection.Collection(client.spotlight, "Temperatures")
+            occupancy_collection = collection.Collection(client.spotlight, "Occupancies")
+            temperature_temp_list =\
+                list(temperature_collection.find({"device_id": self.device_id,
+                                                  "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
+            skipper_value = (len(temperature_list) / 2000) + 1
+            temperature_list = temperature_temp_list[0::skipper_value]
+            occupancy_temp_list =\
+                list(occupancy_collection.find({"device_id": self.device_id,
+                                                "timestamp": {"$gte": start_date}}).sort("timestamp", 1))
+            client.close()
+            occupancy_list = list()
+            occupancy_list.append(occupancy_temp_list[0])
+            previous_occupancy = occupancy_temp_list[0]["occupancy"]
+            prev_in_augmented = True
+            for i in range(1, len(occupancy_temp_list)):
+                if math.fabs(occupancy_temp_list[i]["occupancy"] - previous_occupancy) > 0.5:
+                    if not prev_in_augmented:
+                        occupancy_list.append(occupancy_temp_list[i-1])
+                    occupancy_list.append(occupancy_temp_list[i])
+                    prev_in_augmented = True
+                else:
+                    prev_in_augmented = False
+                previous_occupancy = occupancy_temp_list[i]["occupancy"]
+            occupancy_list.append(occupancy_temp_list[-1])
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
+
         temperature_modified_list = list()
         for temperature_item in temperature_list:
-            temperature_modified_list.append([(temperature_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, temperature_item["temperature"]])
+            item = [(temperature_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0,
+                    temperature_item["temperature"]]
+            temperature_modified_list.append(item)
 
         occupancy_modified_list = list()
         previous_occupancy = 0
@@ -400,34 +425,37 @@ class Device:
             elif current_occupancy == 2:
                 current_occupancy = 1
             previous_occupancy = current_occupancy
-            occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, current_occupancy])
+            item = [(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0,
+                    current_occupancy]
+            occupancy_modified_list.append(item)
         return [occupancy_modified_list, temperature_modified_list]
 
     def get_last_occupancy_temperature(self):
         temperature_list = list()
         occupancy_list = list()
+        client = None
         try:
-            db_conn = rpyc.connect(current_app.config["custom_config"]["db_service_address"],
-                                   current_app.config["custom_config"]["db_service_port"],
-                                   config={"allow_pickle": True, "allow_public_attrs": True})
-            try:
-                temperature_list = pickle.loads(pickle.dumps(db_conn.root.get_last_temperature(self.device_id)))
-                occupancy_list = pickle.loads(pickle.dumps(db_conn.root.get_last_occupancy(self.device_id)))
-                db_conn.close()
-            except Exception, e:
-                current_app.logger.warn("There was a problem reading from db")
-                current_app.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            temperature_collection = collection.Collection(client.spotlight, "Temperatures")
+            occupancy_collection = collection.Collection(client.spotlight, "Occupancies")
+            temperature_list =\
+                list(temperature_collection.find({"device_id": self.device_id}).sort("timestamp", -1).limit(1))
+            occupancy_list =\
+                list(occupancy_collection.find({"device_id": self.device_id}).sort("timestamp", -1).limit(1))
+            client.close()
+            return temperature_list
         except Exception, e:
-            current_app.logger.warning("There was a problem connecting to db")
-            current_app.logger.error(e)
+            handle_db_error(client, e)
         temperature_modified_list = list()
         for temperature_item in temperature_list:
-            temperature_modified_list.append([(temperature_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, temperature_item["temperature"]])
-
+            item = [(temperature_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0,
+                    temperature_item["temperature"]]
+            temperature_modified_list.append(item)
         occupancy_modified_list = list()
         for occupancy_item in occupancy_list:
-            occupancy_modified_list.append([(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0, occupancy_item["occupancy"]/2.0])
+            item = [(occupancy_item["timestamp"] - datetime.datetime.utcfromtimestamp(0)).total_seconds() * 1000.0,
+                    occupancy_item["occupancy"]/2.0]
+            occupancy_modified_list.append(item)
         return [occupancy_modified_list, temperature_modified_list]
 
     def update_warnings(self):
