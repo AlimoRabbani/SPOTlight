@@ -24,7 +24,7 @@ class Config:
         Config.rpi_config = json.loads(open(Config.resource_path + "config_rpi.json").read())
         Config.service_config = json.loads(open(Config.resource_path + "config_service.json").read())
         Config.update_config = json.loads(open(Config.resource_path + "config_update.json").read())
-        Config.update_config = json.loads(open(Config.resource_path + "config_db.json").read())
+        Config.db_config = json.loads(open(Config.resource_path + "config_db.json").read())
 
         logger = logging.getLogger("SPOTlight RPi")
         logger.setLevel(logging.DEBUG)
