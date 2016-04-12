@@ -10,6 +10,7 @@ class Config:
     control_config = dict()
     service_config = dict()
     update_config = dict()
+    db_config = dict()
     logger = logging.getLogger("SPOTlight Decision")
     service_logger = logging.getLogger("SPOTlight Decision Services")
     resource_path = "/home/pi/control_config/"
@@ -23,6 +24,7 @@ class Config:
         Config.control_config = json.loads(open(Config.resource_path + "config_control.json").read())
         Config.service_config = json.loads(open(Config.resource_path + "config_service.json").read())
         Config.update_config = json.loads(open(Config.resource_path + "config_update.json").read())
+        Config.db_config = json.loads(open(Config.resource_path + "config_db.json").read())
 
         logger = logging.getLogger("SPOTlight Decision")
         logger.setLevel(logging.DEBUG)

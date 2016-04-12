@@ -4,6 +4,41 @@ import rpyc
 from config import Config
 from pmv import PMV
 
+import datetime
+import socket
+
+from pymongo import MongoClient
+from pymongo import collection
+
+
+def connect_to_db():
+    client = MongoClient(host=Config.db_config["db_address"], port=Config.db_config["db_port"])
+    client.the_database.authenticate(Config.db_config["db_user"],
+                                     Config.db_config["db_password"],
+                                     source=Config.db_config["db_auth_source"])
+    return client
+
+
+def handle_db_error(client, e):
+    Config.logger.warn("There was a problem connecting to db")
+    Config.logger.error(e)
+    if client:
+        client.close()
+
+
+def get_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 53))
+        ip = s.getsockname()[0]
+        s.close()
+    except Exception, e:
+        Config.logger.error(e)
+        s.close()
+        ip = ''
+    return ip
+
+
 
 class ReactiveControl:
     def __init__(self):
@@ -18,35 +53,38 @@ class ReactiveControl:
     @staticmethod
     def temperature_updated(temperature):
         Config.logger.info("[Temperature][%s]" % str(temperature))
+        client = None
         try:
-            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
-            try:
-                db_conn.root.insert_temperature(temperature, Config.service_config["device_id"])
-                db_conn.close()
-            except Exception, e:
-                Config.logger.warning("There was a problem inserting to db")
-                Config.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            spotlight_collection = collection.Collection(client.spotlight, "Temperatures")
+            now_time = datetime.datetime.utcnow()
+            document = {"timestamp": now_time, "device_id": Config.service_config["device_id"], "temperature": float(temperature)}
+            spotlight_collection.insert_one(document)
+
+            device_collection = collection.Collection(client.spotlight, "Devices")
+            device_collection.update_one({"device_id": Config.service_config["device_id"]},
+                                         {"$set": {"device_ip": get_ip(),
+                                                   "latest_update": now_time,
+                                                   "latest_temperature": float(temperature)}})
+            client.close()
         except Exception, e:
-            Config.logger.warning("There was a problem connecting to db")
-            Config.logger.error(e)
+            handle_db_error(client, e)
         ReactiveControl.current_temperature = temperature
 
     @staticmethod
     def motion_updated(standard_deviation):
         Config.logger.info("[Motion_STD][%s]" % str(standard_deviation))
+        client = None
         try:
-            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
-            try:
-                db_conn.root.insert_motion(standard_deviation,Config.service_config["device_id"])
-                db_conn.close()
-            except Exception, e:
-                Config.logger.warning("There was a problem inserting to db")
-                Config.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            spotlight_collection = collection.Collection(client.spotlight, "Motions")
+            document = {"timestamp": datetime.datetime.utcnow(),
+                        "device_id": Config.service_config["device_id"],
+                        "std": float(standard_deviation)}
+            spotlight_collection.insert_one(document)
+            client.close()
         except Exception, e:
-            Config.logger.warning("There was a problem connecting to db")
-            Config.logger.error(e)
+            handle_db_error(client, e)
         PMV.update_parameters()
         ReactiveControl.update_occupancy_bucket(standard_deviation)
         ReactiveControl.make_decision()
@@ -60,18 +98,17 @@ class ReactiveControl:
         elif ReactiveControl.occupancy_bucket_value > 0:
             ReactiveControl.occupancy_bucket_value -= 1
         Config.logger.info("[Occupancy][%s]" % str(ReactiveControl.occupancy_bucket_value))
+        client = None
         try:
-            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
-            try:
-                db_conn.root.insert_occupancy(ReactiveControl.occupancy_bucket_value, Config.service_config["device_id"])
-                db_conn.close()
-            except Exception, e:
-                Config.logger.warning("There was a problem inserting to db")
-                Config.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            spotlight_collection = collection.Collection(client.spotlight, "Occupancies")
+            document = {"timestamp": datetime.datetime.utcnow(),
+                        "device_id": Config.service_config["device_id"],
+                        "occupancy": int(ReactiveControl.occupancy_bucket_value)}
+            spotlight_collection.insert_one(document)
+            client.close()
         except Exception, e:
-            Config.logger.warning("There was a problem connecting to db")
-            Config.logger.error(e)
+            handle_db_error(client, e)
 
     @staticmethod
     def make_decision():
@@ -174,19 +211,19 @@ class ReactiveControl:
 
     @staticmethod
     def insert_state_to_db():
+        client = None
         try:
-            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
-            try:
-                db_conn.root.insert_state(ReactiveControl.current_heat_state, ReactiveControl.current_cool_state,
-                                          ReactiveControl.current_air_speed, Config.service_config["device_id"])
-                db_conn.close()
-            except Exception, e:
-                Config.logger.warning("There was a problem inserting state to db")
-                Config.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            spotlight_collection = collection.Collection(client.spotlight, "States")
+            document = {"timestamp": datetime.datetime.utcnow(),
+                        "device_id": Config.service_config["device_id"],
+                        "heat": ReactiveControl.current_heat_state,
+                        "cool": ReactiveControl.current_cool_state,
+                        "speed": ReactiveControl.current_air_speed}
+            spotlight_collection.insert_one(document)
+            client.close()
         except Exception, e:
-            Config.logger.warning("There was a problem connecting to db")
-            Config.logger.error(e)
+            handle_db_error(client, e)
 
     @staticmethod
     def insert_ppv_to_db():
@@ -201,15 +238,15 @@ class ReactiveControl:
             pmv = PMV.calculate_pmv(0.5, float(ReactiveControl.current_temperature),
                                     float(ReactiveControl.current_temperature), 1.2,
                                     ReactiveControl.current_air_speed, 60.0)
+        client = None
         try:
-            db_conn = rpyc.connect(Config.service_config["db_service_address"], Config.service_config["db_service_port"])
-            try:
-                db_conn.root.insert_ppv(pmv, ppv, Config.service_config["device_id"])
-                db_conn.close()
-            except Exception, e:
-                Config.logger.warning("There was a problem inserting pmv, ppv to db")
-                Config.logger.error(e)
-                db_conn.close()
+            client = connect_to_db()
+            ppv_collection = collection.Collection(client.spotlight, "PPVs")
+            document = {"timestamp": datetime.datetime.utcnow(),
+                        "device_id": Config.service_config["device_id"],
+                        "pmv": pmv,
+                        "ppv": ppv}
+            ppv_collection.insert_one(document)
+            client.close()
         except Exception, e:
-            Config.logger.warning("There was a problem connecting to db")
-            Config.logger.error(e)
+            handle_db_error(client, e)
