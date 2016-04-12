@@ -10,6 +10,7 @@ SPOTlight_key.private
 
 spotlightVenv/*
 web/spotstarVenv/*
+fix/*
 
 web/insert_to_db.py
 
