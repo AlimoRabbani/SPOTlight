@@ -45,6 +45,7 @@ class Config:
             Config.db_client.the_database.authenticate(Config.db_config["db_user"],
                                                        Config.db_config["db_password"],
                                                        source=Config.db_config["db_auth_source"])
+            Config.logger.info("Successfully connected to db")
         except Exception, e:
             handle_db_error(e)
 
