@@ -46,23 +46,16 @@ class DecisionService(rpyc.Service):
 
 if __name__ == "__main__":
     Config.initialize()
+    Config.connect_to_db()
     if hasattr(sys, "frozen"):
         app = esky.Esky(sys.executable, Config.update_config["update_url"])
         Config.logger.info("SPOTlight control worker %s started..." % app.active_version)
         app.cleanup()
-        client = None
         try:
-            client = connect_to_db()
-            spotlight_collection = collection.Collection(client.spotlight, "Devices")
+            spotlight_collection = collection.Collection(Config.db_client.spotlight, "Devices")
             spotlight_collection.update_one({"device_id": Config.service_config["device_id"]}, {"$set": {"control_app_version": app.active_version}})
-            client.close()
         except Exception, e:
-            handle_db_error(client, e)
-        except Exception, e:
-            Config.logger.warning("Error connecting to %s:%s" %
-                                  (Config.service_config["db_service_address"],
-                                   Config.service_config["db_service_port"]))
-            Config.logger.error(e)
+            Config.handle_access_db_error(e)
     else:
         Config.logger.info("SPOTlight control worker started...")
     Updater.start()

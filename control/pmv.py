@@ -5,25 +5,7 @@ import time
 import rpyc
 from config import Config
 
-from pymongo import MongoClient
 from pymongo import collection
-
-
-def connect_to_db():
-    client = MongoClient(host=Config.db_config["db_address"], port=Config.db_config["db_port"])
-    client.the_database.authenticate(Config.db_config["db_user"],
-                                     Config.db_config["db_password"],
-                                     source=Config.db_config["db_auth_source"])
-    return client
-
-
-def handle_db_error(client, e):
-    Config.logger.warn("There was a problem connecting to db")
-    Config.logger.error(e)
-    if client:
-        client.close()
-
-
 
 class PMV:
     def __init__(self):
@@ -39,18 +21,15 @@ class PMV:
 
     @staticmethod
     def update_parameters():
-        client = None
         try:
-            client = connect_to_db()
-            device_collection = collection.Collection(client.spotlight, "Devices")
+            device_collection = collection.Collection(Config.db_client.spotlight, "Devices")
             parameters = device_collection.find_one({"device_id": Config.service_config["device_id"]})
             PMV.a = float(parameters["device_parameter_a"])
             PMV.b = float(parameters["device_parameter_b"])
             PMV.offset = float(parameters["device_parameter_offset"])
             Config.logger.info("Parameters updated: [a][%s][b][%s][offset][%s]" % (str(PMV.a), str(PMV.b), str(PMV.offset)))
-            client.close()
         except Exception, e:
-            handle_db_error(client, e)
+            Config.handle_access_db_error(e)
 
     @staticmethod
     def calculate_pmv(clo, ta, tr, met, vel, rh):

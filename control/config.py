@@ -5,12 +5,22 @@ import logging
 import os
 import sys
 import logging.handlers
+from pymongo import MongoClient
+
+
+def handle_db_error(e):
+    Config.logger.warn("There was a problem connecting to db")
+    Config.logger.error(e)
+    if Config.db_client:
+        Config.db_client.close()
+
 
 class Config:
     control_config = dict()
     service_config = dict()
     update_config = dict()
     db_config = dict()
+    db_client = None
     logger = logging.getLogger("SPOTlight Decision")
     service_logger = logging.getLogger("SPOTlight Decision Services")
     resource_path = "/home/pi/control_config/"
@@ -18,6 +28,24 @@ class Config:
 
     def __init__(self):
         pass
+
+    @staticmethod
+    def handle_access_db_error(e):
+        Config.logger.warn("There was a problem accessing db")
+        Config.logger.error(e)
+        if Config.db_client:
+            Config.db_client.close()
+        Config.connect_to_db()
+
+    @staticmethod
+    def connect_to_db():
+        try:
+            Config.db_client = MongoClient(host=Config.db_config["db_address"], port=Config.db_config["db_port"])
+            Config.db_client.the_database.authenticate(Config.db_config["db_user"],
+                                                       Config.db_config["db_password"],
+                                                       source=Config.db_config["db_auth_source"])
+        except Exception, e:
+            handle_db_error(e)
 
     @staticmethod
     def initialize():
