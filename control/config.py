@@ -37,9 +37,6 @@ class Config:
 
     @staticmethod
     def connect_to_db():
-        if Config.db_client:
-            Config.db_client.close()
-        Config.db_client = None
         try:
             Config.db_client = MongoClient(host=Config.db_config["db_address"], port=Config.db_config["db_port"])
             Config.db_client.the_database.authenticate(Config.db_config["db_user"],
