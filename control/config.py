@@ -40,7 +40,7 @@ class Config:
         try:
             if Config.db_client:
                 Config.db_client.close()
-            del Config.db_client
+            Config.db_client = None
             Config.db_client = MongoClient(host=Config.db_config["db_address"], port=Config.db_config["db_port"])
             Config.db_client.the_database.authenticate(Config.db_config["db_user"],
                                                        Config.db_config["db_password"],

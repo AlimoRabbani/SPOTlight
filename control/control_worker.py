@@ -19,13 +19,13 @@ class DecisionService(rpyc.Service):
     @staticmethod
     def exposed_temperature_updated(temperature):
         temperature_thread = threading.Thread(target=ReactiveControl.temperature_updated, args=(temperature, ))
-        temperature_thread.daemon = True
+        # temperature_thread.daemon = True
         temperature_thread.start()
 
     @staticmethod
     def exposed_motion_updated(standard_deviation):
         motion_thread = threading.Thread(target=ReactiveControl.motion_updated, args=(standard_deviation, ))
-        motion_thread.daemon = True
+        # motion_thread.daemon = True
         motion_thread.start()
 
 if __name__ == "__main__":
