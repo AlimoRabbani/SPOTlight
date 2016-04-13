@@ -33,13 +33,13 @@ class Config:
     def handle_access_db_error(e):
         Config.logger.warn("There was a problem accessing db")
         Config.logger.error(e)
-        if Config.db_client:
-            Config.db_client.close()
-            Config.db_client = None
         Config.connect_to_db()
 
     @staticmethod
     def connect_to_db():
+        if Config.db_client:
+            Config.db_client.close()
+        Config.db_client = None
         try:
             Config.db_client = MongoClient(host=Config.db_config["db_address"], port=Config.db_config["db_port"])
             Config.db_client.the_database.authenticate(Config.db_config["db_user"],
@@ -81,5 +81,7 @@ class Config:
         file_handler.setFormatter(formatter)
 
         service_logger.addHandler(file_handler)
+
+        Config.connect_to_db()
 
         Config.logger.info("Configurations loaded...")

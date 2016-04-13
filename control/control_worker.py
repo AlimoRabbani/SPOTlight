@@ -30,7 +30,6 @@ class DecisionService(rpyc.Service):
 
 if __name__ == "__main__":
     Config.initialize()
-    Config.connect_to_db()
     if hasattr(sys, "frozen"):
         app = esky.Esky(sys.executable, Config.update_config["update_url"])
         Config.logger.info("SPOTlight control worker %s started..." % app.active_version)
