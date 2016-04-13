@@ -35,6 +35,7 @@ class Config:
         Config.logger.error(e)
         if Config.db_client:
             Config.db_client.close()
+            Config.db_client = None
         Config.connect_to_db()
 
     @staticmethod

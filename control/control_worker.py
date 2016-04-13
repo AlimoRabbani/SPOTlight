@@ -12,23 +12,7 @@ from reactive_control import ReactiveControl
 from config import Config
 from control_updater import Updater
 
-from pymongo import MongoClient
 from pymongo import collection
-
-
-def connect_to_db():
-    client = MongoClient(host=Config.db_config["db_address"], port=Config.db_config["db_port"])
-    client.the_database.authenticate(Config.db_config["db_user"],
-                                     Config.db_config["db_password"],
-                                     source=Config.db_config["db_auth_source"])
-    return client
-
-
-def handle_db_error(client, e):
-    Config.logger.warn("There was a problem connecting to db")
-    Config.logger.error(e)
-    if client:
-        client.close()
 
 
 class DecisionService(rpyc.Service):
